@@ -30,7 +30,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc,
-  updateDoc, deleteDoc, query, where, orderBy
+  updateDoc, deleteDoc, query, where, orderBy, increment
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
@@ -155,6 +155,34 @@ export class FirestoreStore /* implements RecipeStore */ {
     return d.exists() ? d.data().v : null;
   }
   async setMeta(k, v) { await setDoc(doc(this.db, "meta", k), { v }); }
+
+  /* ---- avaliações (coleção "avaliacoes") ---- */
+  async getReviews(receitaId) {
+    const snap = await getDocs(query(collection(this.db, "avaliacoes"), where("receitaId", "==", receitaId)));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0));
+  }
+  async getAllReviews() {
+    const snap = await getDocs(collection(this.db, "avaliacoes"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }
+  async addOrUpdateReview(av) {
+    // 1 avaliação por usuário por receita → id determinístico
+    const id = `${av.receitaId}_${av.autorId}`;
+    await setDoc(doc(this.db, "avaliacoes", id),
+      { receitaId: av.receitaId, autorId: av.autorId, autorNome: av.autorNome || '',
+        nota: av.nota, comentario: av.comentario || '', criadoEm: Date.now() }, { merge: true });
+    return { id, ...av };
+  }
+  async incView(id) {
+    try { await updateDoc(doc(this.db, "receitas", id), { views: increment(1) }); } catch(e) {}
+  }
+
+  /* ---- dados por usuário (coleção "userdata", id = uid) ---- */
+  async getUserData(uid) {
+    const d = await getDoc(doc(this.db, "userdata", uid));
+    return d.exists() ? d.data() : {};
+  }
+  async saveUserData(uid, data) { await setDoc(doc(this.db, "userdata", uid), data); }
 }
 
 /* ============================================================================
@@ -187,11 +215,27 @@ export class FirestoreStore /* implements RecipeStore */ {
        }
 
        // receitas: todos leem; cria só com acesso ativo;
-       // edita/exclui se for o dono ou admin
+       // edita/exclui se for o dono ou admin; QUALQUER logado pode +1 view
        match /receitas/{id} {
          allow read: if true;
          allow create: if acessoAtivo();
-         allow update, delete: if ehAdmin() || resource.data.autorId == request.auth.uid;
+         allow update: if ehAdmin() || resource.data.autorId == request.auth.uid
+           || (request.auth != null &&
+               request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']));
+         allow delete: if ehAdmin() || resource.data.autorId == request.auth.uid;
+       }
+
+       // avaliações: todos leem; cria/edita a própria; admin/dono apaga
+       match /avaliacoes/{id} {
+         allow read: if true;
+         allow create, update: if request.auth != null
+           && request.resource.data.autorId == request.auth.uid;
+         allow delete: if ehAdmin() || (request.auth != null && resource.data.autorId == request.auth.uid);
+       }
+
+       // dados pessoais (lista de compras, cardápio, histórico): só o dono
+       match /userdata/{id} {
+         allow read, write: if request.auth != null && request.auth.uid == id;
        }
 
        // usuarios: cada um lê o próprio; admin lê todos.
