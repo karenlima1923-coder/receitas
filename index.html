@@ -390,6 +390,23 @@
   .imgprev img{width:100%;height:100%;object-fit:cover}
   .imgprev.on{display:block}
 
+  /* ---- construtor de ingredientes/passos (Modelo 1) ---- */
+  .sechead{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .sechead label{font-size:13px;font-weight:600;color:var(--mut);margin:0}
+  .badge{font-size:11px;color:var(--mut2);background:rgba(255,255,255,.05);padding:3px 9px;border-radius:999px;font-weight:600}
+  .addline{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    border:1.5px dashed color-mix(in srgb,var(--acc) 45%,var(--line));border-radius:12px;padding:11px;
+    color:var(--acc-bright);font-weight:600;font-size:13.5px;background:color-mix(in srgb,var(--acc) 6%,transparent);transition:.15s;margin-top:2px}
+  .addline:hover{background:color-mix(in srgb,var(--acc) 12%,transparent)}
+  .rmrow{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#ff9a9a;display:grid;place-items:center;font-size:14px;flex:0 0 auto}
+  .rmrow:hover{background:rgba(255,90,90,.14)}
+  .ingrow{display:grid;grid-template-columns:80px 162px 1fr 38px;gap:8px;align-items:center;margin-bottom:8px}
+  .ingrow input,.ingrow select{padding:10px 11px;border-radius:10px}
+  .steprow{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+  .steprow .num{flex:0 0 30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--acc) 18%,transparent);
+    color:var(--acc-bright);font-weight:700;display:grid;place-items:center;font-size:13px;margin-top:4px}
+  .steprow textarea{min-height:52px}
+
   /* toast */
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);
     border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);padding:13px 20px;border-radius:13px;font-size:14px;font-weight:600;
@@ -413,7 +430,8 @@
     .shell{display:block;max-width:100%}
     /* menu lateral vira gaveta deslizante */
     aside{position:fixed;top:0;left:0;height:100dvh;width:284px;max-width:86vw;margin:0;border-radius:0 24px 24px 0;
-      transform:translateX(-102%);transition:transform .26s ease;z-index:120;box-shadow:0 30px 80px -20px #000}
+      transform:translateX(-102%);transition:transform .26s ease;z-index:120;box-shadow:0 30px 80px -20px #000;
+      background:#0e1219}
     aside.open{transform:none}
     .scrim{display:block;position:fixed;inset:0;background:rgba(4,6,10,.6);backdrop-filter:blur(2px);z-index:110;opacity:0;pointer-events:none;transition:.25s}
     .scrim.on{opacity:1;pointer-events:auto}
@@ -458,6 +476,10 @@
     .feature h2{font-size:24px}
     .week{grid-template-columns:1fr}
     .detacts button{flex:1;justify-content:center}
+    /* construtor de ingredientes em coluna */
+    .ingrow{grid-template-columns:70px 1fr 36px;grid-template-areas:'q n x' 'u n x';gap:7px}
+    .ingrow .f-q{grid-area:q}.ingrow .f-u{grid-area:u}.ingrow .f-n{grid-area:n;align-self:stretch}.ingrow .rmrow{grid-area:x;align-self:center}
+    .ingrow .f-n{height:100%}
   }
 </style>
 </head>
@@ -1852,6 +1874,29 @@ function abrirModoCozinhar(r, fator){
 }
 
 /* ---------- formulário criar/editar ---------- */
+const UNIDS=['g','kg','ml','L','xícara(s)','colher(es) de sopa','colher(es) de chá','unidade(s)','dente(s)','fatia(s)','pitada(s)','a gosto','—'];
+const ABREV=['g','kg','ml','L'];
+const optsUnid=(sel)=>UNIDS.map(u=>`<option ${u===sel?'selected':''}>${u}</option>`).join('');
+// monta a linha de ingrediente num texto que o app entende e escala
+function compoeIngrediente(q,u,n){
+  n=(n||'').trim(); if(!n) return '';
+  q=(q||'').trim().replace(',', '.');
+  if(!q) return n;
+  if(u==='a gosto') return `${n} a gosto`;
+  if(u==='—'||u==='unidade(s)') return `${q} ${n}`;            // ex.: "3 ovos"
+  if(ABREV.includes(u)) return `${q}${u} de ${n}`;              // ex.: "500g de farinha"
+  return `${q} ${u} de ${n}`;                                   // ex.: "2 xícara(s) de leite"
+}
+// tenta separar uma linha existente em {q,u,n} (para edição) — com fallback seguro
+function decompoeIngrediente(linha){
+  linha=String(linha||'').trim(); if(!linha) return {q:'',u:'—',n:''};
+  let m=linha.match(/^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s*(kg|g|ml|l)\s+de\s+(.+)$/i);
+  if(m){ let u=m[2].toLowerCase(); u=(u==='l'?'L':u); return {q:m[1],u,n:m[3]}; }
+  m=linha.match(/^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s+(.+)$/);
+  if(m && !/\sde\s/.test(m[2])) return {q:m[1],u:'—',n:m[2]};   // ex.: "3 ovos"
+  return {q:'',u:'—',n:linha};                                  // mantém a linha original
+}
+
 function openForm(r){
   const editing=!!(r&&r.id);
   const c=cap();
@@ -1890,8 +1935,18 @@ function openForm(r){
         <div class="tagchips" id="f_tags">${TAGS.map(t=>`<button type="button" data-ftag="${t.slug}" class="tagchip ${editing&&(r.tags||[]).includes(t.slug)?'on':''}">${t.emoji} ${t.nome}</button>`).join('')}</div>
         <div class="help">Clique para marcar. Aparecem como filtro nas listas.</div>
       </div>
-      <div class="field"><label>Ingredientes</label><textarea id="f_ing" placeholder="Ex.: 500g de farinha">${editing?esc((r.ingredientes||[]).join('\n')):''}</textarea><div class="help">Um por linha, com a medida na frente: <b>500g de farinha</b> · <b>2 colheres de açúcar</b> · <b>1 xícara de leite</b>. Assim o app recalcula ao mudar a porção.</div></div>
-      <div class="field"><label>Modo de preparo</label><textarea id="f_prep" placeholder="Um passo por linha">${editing?esc((r.preparo||[]).join('\n')):''}</textarea><div class="help">Um passo por linha.</div></div>
+      <div class="field">
+        <div class="sechead"><label>Ingredientes</label><span class="badge" id="f_ingc">0 itens</span></div>
+        <div id="f_ing"></div>
+        <button type="button" class="addline" id="f_addIng">＋ Adicionar ingrediente</button>
+        <div class="help">Quantidade · unidade · ingrediente. Ex.: <b>500 · g · farinha</b>. Assim o app recalcula tudo ao mudar a porção.</div>
+      </div>
+      <div class="field">
+        <div class="sechead"><label>Modo de preparo</label><span class="badge" id="f_prepc">0 passos</span></div>
+        <div id="f_prep"></div>
+        <button type="button" class="addline" id="f_addStep">＋ Adicionar passo</button>
+        <div class="help">Um passo de cada vez. Se escrever um tempo (“asse por 40 min”), o app cria um cronômetro no modo cozinhar.</div>
+      </div>
     </div>
     <div class="mfoot">
       <button class="bsoft" data-close>Cancelar</button><span class="grow"></span>
@@ -1913,6 +1968,30 @@ function openForm(r){
 
   m.querySelectorAll('[data-ftag]').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
 
+  // ----- construtor de ingredientes e passos (Modelo 1) -----
+  const boxIng=m.querySelector('#f_ing'), boxPrep=m.querySelector('#f_prep');
+  function contaIng(){ const k=boxIng.children.length; m.querySelector('#f_ingc').textContent=k+(k===1?' item':' itens'); }
+  function numPrep(){ boxPrep.querySelectorAll('.steprow .num').forEach((n,i)=>n.textContent=i+1); const k=boxPrep.children.length; m.querySelector('#f_prepc').textContent=k+(k===1?' passo':' passos'); }
+  function addIngRow(q='',u='g',n=''){
+    const d=el(`<div class="ingrow">
+      <input class="f-q" inputmode="decimal" placeholder="500" value="${esc(String(q))}">
+      <select class="f-u">${optsUnid(u)}</select>
+      <input class="f-n" placeholder="farinha de trigo" value="${esc(n)}">
+      <button type="button" class="rmrow" title="Remover">✕</button>
+    </div>`);
+    d.querySelector('.rmrow').onclick=()=>{ d.remove(); contaIng(); };
+    boxIng.appendChild(d); contaIng();
+  }
+  function addStepRow(txt=''){
+    const d=el(`<div class="steprow"><span class="num"></span><textarea placeholder="Descreva este passo…">${esc(txt)}</textarea><button type="button" class="rmrow" title="Remover">✕</button></div>`);
+    d.querySelector('.rmrow').onclick=()=>{ d.remove(); numPrep(); };
+    boxPrep.appendChild(d); numPrep();
+  }
+  m.querySelector('#f_addIng').onclick=()=>addIngRow();
+  m.querySelector('#f_addStep').onclick=()=>addStepRow();
+  if(editing && (r.ingredientes||[]).length){ r.ingredientes.forEach(l=>{ const p=decompoeIngrediente(l); addIngRow(p.q,p.u,p.n); }); } else { addIngRow('','g',''); }
+  if(editing && (r.preparo||[]).length){ r.preparo.forEach(p=>addStepRow(p)); } else { addStepRow(''); }
+
   m.querySelector('[data-close]').onclick=closeOverlay;
   m.querySelector('[data-save]').onclick=async()=>{
     const titulo=m.querySelector('#f_titulo').value.trim();
@@ -1925,9 +2004,10 @@ function openForm(r){
       imagem: inputImg?inputImg.value.trim():(editing?(r.imagem||''):''),
       tempoMin:+m.querySelector('#f_tempo').value||0, porcoes:m.querySelector('#f_porc').value.trim(), dificuldade:m.querySelector('#f_dif').value,
       rating: editing?r.rating:5.0, tags, views: editing?(r.views||0):0,
-      ingredientes:m.querySelector('#f_ing').value.split('\n').map(s=>s.trim()).filter(Boolean),
-      preparo:m.querySelector('#f_prep').value.split('\n').map(s=>s.trim()).filter(Boolean),
+      ingredientes:[...boxIng.querySelectorAll('.ingrow')].map(row=>compoeIngrediente(row.querySelector('.f-q').value, row.querySelector('.f-u').value, row.querySelector('.f-n').value)).filter(Boolean),
+      preparo:[...boxPrep.querySelectorAll('.steprow textarea')].map(t=>t.value.trim()).filter(Boolean),
     };
+    if(!rec.ingredientes.length){ toast('Adicione pelo menos um ingrediente'); return; }
     await store.saveRecipe(rec); closeOverlay(); toast(editing?'Receita atualizada':'Receita adicionada ✨');
     renderSidebar(); render();
   };
