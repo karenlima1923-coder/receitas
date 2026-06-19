@@ -1658,7 +1658,7 @@ function openUserEdit(u){
     closeOverlay(); toast('Usuário atualizado');
     await refreshSessao(); renderSidebar(); renderAdmin($('#content'));
   };
-  showOverlay(m); setTimeout(()=>m.querySelector('#e_nome')?.focus(),60);
+  showOverlay(m, true); setTimeout(()=>m.querySelector('#e_nome')?.focus(),60);
 }
 
 function openUserForm(){
@@ -1693,7 +1693,7 @@ function openUserForm(){
     await store.saveUser(novo);
     closeOverlay(); toast('Usuário criado'); USERS=await store.getUsers(); renderSidebar(); renderAdmin($('#content'));
   };
-  showOverlay(m); setTimeout(()=>m.querySelector('#u_nome')?.focus(),60);
+  showOverlay(m, true); setTimeout(()=>m.querySelector('#u_nome')?.focus(),60);
 }
 
 /* ---------- detalhe ---------- */
@@ -1874,27 +1874,27 @@ function abrirModoCozinhar(r, fator){
 }
 
 /* ---------- formulário criar/editar ---------- */
-const UNIDS=['g','kg','ml','L','xícara(s)','colher(es) de sopa','colher(es) de chá','unidade(s)','dente(s)','fatia(s)','pitada(s)','a gosto','—'];
+const UNIDS=['g','kg','ml','L','xícara(s)','colher(es) de sopa','colher(es) de chá','unidade(s)','dente(s)','fatia(s)','pitada(s)','pacote(s)','lata(s)','copo(s)','a gosto'];
 const ABREV=['g','kg','ml','L'];
-const optsUnid=(sel)=>UNIDS.map(u=>`<option ${u===sel?'selected':''}>${u}</option>`).join('');
+const datalistUnid=()=>UNIDS.map(u=>`<option value="${u}">`).join('');
 // monta a linha de ingrediente num texto que o app entende e escala
 function compoeIngrediente(q,u,n){
   n=(n||'').trim(); if(!n) return '';
-  q=(q||'').trim().replace(',', '.');
-  if(!q) return n;
-  if(u==='a gosto') return `${n} a gosto`;
-  if(u==='—'||u==='unidade(s)') return `${q} ${n}`;            // ex.: "3 ovos"
-  if(ABREV.includes(u)) return `${q}${u} de ${n}`;              // ex.: "500g de farinha"
-  return `${q} ${u} de ${n}`;                                   // ex.: "2 xícara(s) de leite"
+  q=(q||'').trim().replace(',', '.'); u=(u||'').trim();
+  if(/^a\s*gosto$/i.test(u)) return `${n} a gosto`;       // "sal a gosto"
+  if(!q) return u ? `${n} (${u})` : n;                     // sem quantidade
+  if(!u || u==='—') return `${q} ${n}`;                    // "3 ovos"
+  if(ABREV.includes(u)) return `${q}${u} de ${n}`;         // "500g de farinha"
+  return `${q} ${u} de ${n}`;                              // "2 pacote(s) de macarrão"
 }
 // tenta separar uma linha existente em {q,u,n} (para edição) — com fallback seguro
 function decompoeIngrediente(linha){
-  linha=String(linha||'').trim(); if(!linha) return {q:'',u:'—',n:''};
+  linha=String(linha||'').trim(); if(!linha) return {q:'',u:'',n:''};
   let m=linha.match(/^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s*(kg|g|ml|l)\s+de\s+(.+)$/i);
   if(m){ let u=m[2].toLowerCase(); u=(u==='l'?'L':u); return {q:m[1],u,n:m[3]}; }
   m=linha.match(/^(\d+(?:[.,]\d+)?(?:\/\d+)?)\s+(.+)$/);
-  if(m && !/\sde\s/.test(m[2])) return {q:m[1],u:'—',n:m[2]};   // ex.: "3 ovos"
-  return {q:'',u:'—',n:linha};                                  // mantém a linha original
+  if(m && !/\sde\s/.test(m[2])) return {q:m[1],u:'',n:m[2]};   // ex.: "3 ovos"
+  return {q:'',u:'',n:linha};                                 // mantém a linha original
 }
 
 function openForm(r){
@@ -1937,9 +1937,10 @@ function openForm(r){
       </div>
       <div class="field">
         <div class="sechead"><label>Ingredientes</label><span class="badge" id="f_ingc">0 itens</span></div>
+        <datalist id="f_unidades">${datalistUnid()}</datalist>
         <div id="f_ing"></div>
         <button type="button" class="addline" id="f_addIng">＋ Adicionar ingrediente</button>
-        <div class="help">Quantidade · unidade · ingrediente. Ex.: <b>500 · g · farinha</b>. Assim o app recalcula tudo ao mudar a porção.</div>
+        <div class="help">Quantidade · unidade · ingrediente. A unidade aceita escrever qualquer coisa (ex.: <b>pacote</b>, <b>lata</b>). Para sal, queijo etc., deixe a quantidade vazia e escreva <b>a gosto</b> na unidade.</div>
       </div>
       <div class="field">
         <div class="sechead"><label>Modo de preparo</label><span class="badge" id="f_prepc">0 passos</span></div>
@@ -1972,10 +1973,10 @@ function openForm(r){
   const boxIng=m.querySelector('#f_ing'), boxPrep=m.querySelector('#f_prep');
   function contaIng(){ const k=boxIng.children.length; m.querySelector('#f_ingc').textContent=k+(k===1?' item':' itens'); }
   function numPrep(){ boxPrep.querySelectorAll('.steprow .num').forEach((n,i)=>n.textContent=i+1); const k=boxPrep.children.length; m.querySelector('#f_prepc').textContent=k+(k===1?' passo':' passos'); }
-  function addIngRow(q='',u='g',n=''){
+  function addIngRow(q='',u='',n=''){
     const d=el(`<div class="ingrow">
       <input class="f-q" inputmode="decimal" placeholder="500" value="${esc(String(q))}">
-      <select class="f-u">${optsUnid(u)}</select>
+      <input class="f-u" list="f_unidades" placeholder="un., pacote…" value="${esc(u||'')}">
       <input class="f-n" placeholder="farinha de trigo" value="${esc(n)}">
       <button type="button" class="rmrow" title="Remover">✕</button>
     </div>`);
@@ -1989,7 +1990,7 @@ function openForm(r){
   }
   m.querySelector('#f_addIng').onclick=()=>addIngRow();
   m.querySelector('#f_addStep').onclick=()=>addStepRow();
-  if(editing && (r.ingredientes||[]).length){ r.ingredientes.forEach(l=>{ const p=decompoeIngrediente(l); addIngRow(p.q,p.u,p.n); }); } else { addIngRow('','g',''); }
+  if(editing && (r.ingredientes||[]).length){ r.ingredientes.forEach(l=>{ const p=decompoeIngrediente(l); addIngRow(p.q,p.u,p.n); }); } else { addIngRow('','',''); }
   if(editing && (r.preparo||[]).length){ r.preparo.forEach(p=>addStepRow(p)); } else { addStepRow(''); }
 
   m.querySelector('[data-close]').onclick=closeOverlay;
@@ -2011,16 +2012,16 @@ function openForm(r){
     await store.saveRecipe(rec); closeOverlay(); toast(editing?'Receita atualizada':'Receita adicionada ✨');
     renderSidebar(); render();
   };
-  showOverlay(m);
+  showOverlay(m, true);
   setTimeout(()=>m.querySelector('#f_titulo')?.focus(),60);
 }
 
 /* ---------- overlay / toast ---------- */
 let overlayTimer;
-function showOverlay(node){clearTimeout(overlayTimer);const o=$('#overlay');o.innerHTML='';o.appendChild(node);o.classList.add('on');}
-function closeOverlay(){clearTimeout(overlayTimer);$('#overlay').classList.remove('on');overlayTimer=setTimeout(()=>$('#overlay').innerHTML='',180);}
-$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeOverlay();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlay();});
+function showOverlay(node, persistente){clearTimeout(overlayTimer);const o=$('#overlay');o.innerHTML='';o.appendChild(node);o.classList.add('on');o.dataset.persist=persistente?'1':'';}
+function closeOverlay(){clearTimeout(overlayTimer);const o=$('#overlay');o.classList.remove('on');o.dataset.persist='';overlayTimer=setTimeout(()=>o.innerHTML='',180);}
+$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay') && $('#overlay').dataset.persist!=='1')closeOverlay();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape' && $('#overlay').dataset.persist!=='1')closeOverlay();});
 let tT; function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
 
 /* ---------- busca ---------- */
