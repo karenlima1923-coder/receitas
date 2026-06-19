@@ -192,14 +192,21 @@ export class FirestoreStore /* implements RecipeStore */ {
    service cloud.firestore {
      match /databases/{database}/documents {
 
+       function logado() { return request.auth != null; }
+       // o documento do próprio usuário existe?
+       function existePerfil() {
+         return logado() &&
+           exists(/databases/$(database)/documents/usuarios/$(request.auth.uid));
+       }
        function meu() {
          return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data;
        }
+       // À PROVA de perfil inexistente: só lê o doc depois de confirmar que ele existe.
        function ehAdmin() {
-         return request.auth != null && meu().role == 'admin';
+         return existePerfil() && meu().role == 'admin';
        }
        function acessoAtivo() {
-         return request.auth != null && (
+         return existePerfil() && (
            meu().role == 'admin' ||
            (meu().status == 'ativo' && (
               meu().vitalicio == true ||
@@ -219,30 +226,29 @@ export class FirestoreStore /* implements RecipeStore */ {
        match /receitas/{id} {
          allow read: if true;
          allow create: if acessoAtivo();
-         allow update: if ehAdmin() || resource.data.autorId == request.auth.uid
-           || (request.auth != null &&
+         allow update: if resource.data.autorId == request.auth.uid || ehAdmin()
+           || (logado() &&
                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']));
-         allow delete: if ehAdmin() || resource.data.autorId == request.auth.uid;
+         allow delete: if resource.data.autorId == request.auth.uid || ehAdmin();
        }
 
        // avaliações: todos leem; cria/edita a própria; admin/dono apaga
        match /avaliacoes/{id} {
          allow read: if true;
-         allow create, update: if request.auth != null
+         allow create, update: if logado()
            && request.resource.data.autorId == request.auth.uid;
-         allow delete: if ehAdmin() || (request.auth != null && resource.data.autorId == request.auth.uid);
+         allow delete: if (logado() && resource.data.autorId == request.auth.uid) || ehAdmin();
        }
 
        // dados pessoais (lista de compras, cardápio, histórico): só o dono
        match /userdata/{id} {
-         allow read, write: if request.auth != null && request.auth.uid == id;
+         allow read, write: if logado() && request.auth.uid == id;
        }
 
-       // usuarios: cada um lê o próprio; admin lê todos.
-       // o próprio usuário pode CRIAR seu perfil no 1º login, mas só como 'user'
-       // (não consegue se autopromover a admin). Suspender/plano/role: só admin.
+       // usuarios: cada um lê/cria o PRÓPRIO (checagem barata primeiro, p/ não quebrar
+       // no 1º login quando o perfil ainda não existe); admin lê todos e gerencia.
        match /usuarios/{id} {
-         allow read:   if ehAdmin() || request.auth.uid == id;
+         allow read:   if request.auth.uid == id || ehAdmin();
          allow create: if request.auth.uid == id && request.resource.data.role == 'user';
          allow update, delete: if ehAdmin();
        }
