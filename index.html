@@ -2,8 +2,16 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mise · Receitas</title>
+<!-- PWA: app instalável -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A0D14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mise">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -277,6 +285,49 @@
   .htop .r .vv{font-size:12px;color:var(--mut);font-weight:600}
   @media(max-width:900px){ .planner{grid-template-columns:1fr}.recpool{position:static}.week{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr} }
 
+  /* aviso do admin */
+  .aviso{display:flex;align-items:flex-start;gap:12px;border-radius:14px;padding:13px 16px;margin-bottom:18px;font-size:14px;line-height:1.45;
+    background:color-mix(in srgb,var(--acc) 12%,transparent);border:1px solid color-mix(in srgb,var(--acc) 35%,transparent);color:#dce7ff}
+  .aviso .bi{font-size:18px}
+  /* selo de moderação no card */
+  .card .pend{position:absolute;bottom:0;left:0;right:0;background:rgba(245,180,80,.93);color:#1a1206;font-size:11.5px;font-weight:700;text-align:center;padding:4px;z-index:2;letter-spacing:.02em}
+  /* barra Desfazer */
+  .undobar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:210;display:flex;align-items:center;gap:14px;
+    background:var(--panel);border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);padding:12px 14px 12px 18px;border-radius:14px;
+    box-shadow:0 20px 50px -20px #000;opacity:0;transition:.2s;font-size:14px;font-weight:600}
+  .undobar.on{opacity:1;transform:translateX(-50%)}
+  .undobar button{background:var(--acc);color:var(--acc-on);font-weight:700;padding:8px 14px;border-radius:10px;font-size:13.5px}
+  @media(max-width:900px){ .undobar{bottom:86px;width:calc(100% - 28px);max-width:430px} }
+  /* skeleton (carregando) */
+  @keyframes shimmer{100%{background-position:-200% 0}}
+  .sk{background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.12) 37%,rgba(255,255,255,.05) 63%);
+    background-size:200% 100%;animation:shimmer 1.3s linear infinite;border-radius:10px}
+  .skcard{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+  .skcard .skph{aspect-ratio:16/10}
+  .skcard .skb{padding:15px 16px 18px}
+  .skline{height:13px;margin-bottom:9px}
+  /* moderação */
+  .modcard{display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:10px}
+  .modcard .emoji{font-size:30px;flex:0 0 auto}
+  .modcard b{font-size:15px}
+  .modcard .who{font-size:12px;color:var(--mut2)}
+  .modcard .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .modcard .acts .ap{background:rgba(52,211,153,.16);color:#6ee7b7;border:1px solid rgba(52,211,153,.3);padding:9px 14px;border-radius:11px;font-weight:700;font-size:13px}
+  .modcard .acts .rj{background:rgba(255,90,90,.14);color:#ff9a9a;border:1px solid rgba(255,90,90,.3);padding:9px 14px;border-radius:11px;font-weight:700;font-size:13px}
+  .modcard .acts .vw{background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cdd6dd;padding:9px 14px;border-radius:11px;font-weight:600;font-size:13px}
+  /* logs */
+  .logbox{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:6px 4px;max-height:340px;overflow:auto}
+  .logrow{display:flex;gap:10px;align-items:baseline;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--line)}
+  .logrow:last-child{border:none}
+  .logrow .t{margin-left:auto;font-size:11.5px;color:var(--mut2);white-space:nowrap}
+  .logrow .q{color:var(--acc-bright);font-weight:600}
+  /* editor de aviso */
+  .avisoedit{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:16px;margin:6px 0 22px}
+  .avisoedit textarea{width:100%;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:14px;padding:10px;min-height:54px;outline:none;margin-bottom:10px;font-family:inherit}
+  .avisoedit .rowf{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .avisoedit label.ck{font-size:13px;color:var(--mut);display:flex;align-items:center;gap:7px;cursor:pointer}
+  .secblk{font-family:'Sora';font-size:16px;font-weight:700;margin:26px 0 12px}
+
   /* ===== main ===== */
   main{flex:1;padding:26px 32px 60px;min-width:0}
   .topbar{display:flex;align-items:center;gap:16px;margin-bottom:26px;flex-wrap:wrap}
@@ -548,11 +599,16 @@ class RecipeStore {
   async incView(id) {}                      // +1 visualização na receita
   async getUserData(uid) {}                 // -> {lista, cardapio, historico}
   async saveUserData(uid, data) {}
+  // --- admin: avisos e logs ---
+  async getConfig(k) {}                     // config pública (ex.: aviso do admin)
+  async setConfig(k, v) {}
+  async addLog(e) {}                        // registra atividade
+  async getLogs() {}                        // -> [log] recentes
 }
 
 /* ---- Implementação IndexedDB (em uso hoje) ---- */
 class IndexedDBStore extends RecipeStore {
-  constructor(){ super(); this.db=null; this.NAME='mise_receitas'; this.VER=3; }
+  constructor(){ super(); this.db=null; this.NAME='mise_receitas'; this.VER=4; }
   init(){
     return new Promise((res,rej)=>{
       const req=indexedDB.open(this.NAME,this.VER);
@@ -567,6 +623,8 @@ class IndexedDBStore extends RecipeStore {
         if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
         if(!db.objectStoreNames.contains('avaliacoes')) db.createObjectStore('avaliacoes',{keyPath:'id'});
         if(!db.objectStoreNames.contains('userdata')) db.createObjectStore('userdata',{keyPath:'uid'});
+        if(!db.objectStoreNames.contains('config')) db.createObjectStore('config',{keyPath:'k'});
+        if(!db.objectStoreNames.contains('logs')) db.createObjectStore('logs',{keyPath:'id'});
       };
       req.onsuccess=e=>{this.db=e.target.result;res();};
       req.onerror=e=>rej(e.target.error);
@@ -625,11 +683,15 @@ class IndexedDBStore extends RecipeStore {
   async incView(id){ const r=await this.getRecipe(id); if(!r)return; r.views=(r.views||0)+1; await this._put('receitas',r); }
   async getUserData(uid){ const d=await this._get('userdata',uid); return d?d.data:{}; }
   async saveUserData(uid,data){ return this._put('userdata',{uid,data}); }
+  async getConfig(k){ const r=await this._get('config',k); return r?r.v:null; }
+  async setConfig(k,v){ return this._put('config',{k,v}); }
+  async addLog(e){ e.id='lg'+Date.now()+Math.random().toString(16).slice(2); e.ts=Date.now(); return this._put('logs',e); }
+  async getLogs(){ return (await this._all('logs')).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,50); }
 }
 
 /* ---- Fallback em memória (se o navegador bloquear IndexedDB, ex: preview) ---- */
 class MemoryStore extends RecipeStore {
-  constructor(){ super(); this.cats=[]; this.recs=[]; this.users=[]; this.meta={}; this.reviews=[]; this.udata={}; }
+  constructor(){ super(); this.cats=[]; this.recs=[]; this.users=[]; this.meta={}; this.reviews=[]; this.udata={}; this.config={}; this.logs=[]; }
   async init(){}
   async seedIfEmpty(cats,recipes,users){
     if(!this.recs.length){ this.cats=[...cats]; this.recs=recipes.map(r=>({...r})); }
@@ -669,6 +731,10 @@ class MemoryStore extends RecipeStore {
   async incView(id){ const r=await this.getRecipe(id); if(r) r.views=(r.views||0)+1; }
   async getUserData(uid){ return (this.udata&&this.udata[uid])||{}; }
   async saveUserData(uid,data){ this.udata=this.udata||{}; this.udata[uid]=data; }
+  async getConfig(k){ return (this.config&&k in this.config)?this.config[k]:null; }
+  async setConfig(k,v){ this.config=this.config||{}; this.config[k]=v; }
+  async addLog(e){ this.logs=this.logs||[]; e.id='lg'+Date.now(); e.ts=Date.now(); this.logs.unshift(e); }
+  async getLogs(){ return (this.logs||[]).slice(0,50); }
 }
 
 /* =====================================================================
@@ -822,6 +888,40 @@ const tagBy=s=>TAGS.find(t=>t.slug===s)||{nome:s,emoji:'🏷️'};
 let reviewStats={};                              // {receitaId:{media,n}}
 let userData={lista:[],cardapio:{},historico:[]};// dados do usuário logado
 let fOrdenar='recentes', fDif='', fTags=new Set(); // filtros das listas
+let aviso=null;                                  // aviso do admin {texto,ativo,ts}
+
+/* registra atividade (silencioso se falhar) */
+async function logAtividade(acao,alvo){
+  try{ await store.addLog({quem:(usuario&&(usuario.nome||usuario.email))||'?', acao, alvo:alvo||''}); }catch(e){}
+}
+/* moderação: uma receita é visível se aprovada, ou se for do próprio autor, ou se sou admin */
+function visivelReceita(r){
+  const st=r.status||'aprovado';
+  if(st==='aprovado') return true;
+  if(cap().admin) return true;
+  if(usuario && r.autorId===usuario.id && st==='pendente') return true; // autor vê a própria pendente
+  return false;
+}
+async function recipesVisiveis(opts){
+  const lista=await store.getRecipes(opts);
+  return lista.filter(visivelReceita);
+}
+/* barra "Desfazer" (substitui os confirmar? nas exclusões) */
+let undoTimer;
+function toastUndo(msg,onUndo){
+  clearTimeout(undoTimer);
+  let bar=document.getElementById('undobar'); if(bar) bar.remove();
+  bar=el(`<div class="undobar" id="undobar"><span>${esc(msg)}</span><button id="undoBtn">↩ Desfazer</button></div>`);
+  document.body.appendChild(bar);
+  requestAnimationFrame(()=>bar.classList.add('on'));
+  const fim=()=>{ const b=document.getElementById('undobar'); if(b){ b.classList.remove('on'); setTimeout(()=>b.remove(),250);} };
+  bar.querySelector('#undoBtn').onclick=async()=>{ clearTimeout(undoTimer); fim(); try{ await onUndo(); }catch(e){ toast('Não consegui desfazer'); } };
+  undoTimer=setTimeout(fim,5500);
+}
+/* skeletons (tela de carregamento) */
+function skCard(){ return `<div class="skcard"><div class="sk skph"></div><div class="skb"><div class="sk skline" style="width:80%"></div><div class="sk skline" style="width:55%"></div></div></div>`; }
+function skeletonGrid(n=8){ return `<div class="grid">${Array.from({length:n}).map(skCard).join('')}</div>`; }
+function skeletonInicio(){ return `<div class="feat" style="margin-bottom:30px"><div class="sk" style="height:230px;border-radius:26px"></div><div class="statwrap"><div class="sk" style="height:105px;border-radius:20px"></div><div class="sk" style="height:105px;border-radius:20px"></div></div></div>`+skeletonGrid(8); }
 const DIAS=[['seg','Segunda'],['ter','Terça'],['qua','Quarta'],['qui','Quinta'],['sex','Sexta'],['sab','Sábado'],['dom','Domingo']];
 
 function aggregaReviews(arr){
@@ -883,6 +983,7 @@ async function boot(){
   // listar usuários pode ser negado para não-admin (regras) — não é fatal
   try{ USERS=await store.getUsers(); }catch(e){ console.info('getUsers ignorado (sem permissão de listar):',e?.message||e); USERS=[]; }
   await recarregaReviews();
+  try{ aviso=await store.getConfig('aviso'); }catch(e){ aviso=null; }
   if(usuario) startApp(); else renderLogin();
 }
 // fallback: se o módulo não rodou (ex.: file://), inicia em modo local
@@ -1024,9 +1125,11 @@ const catBy=slug=>CATS.find(c=>c.slug===slug)||{nome:'—',emoji:'🍽️',grad:
 /* ---------- sidebar ---------- */
 async function renderSidebar(){
   const counts={};
-  for(const c of CATS) counts[c.slug]=(await store.getRecipes({categoria:c.slug})).length;
-  const favs=(await store.getRecipes({favoritas:true})).length;
+  for(const c of CATS) counts[c.slug]=(await store.getRecipes({categoria:c.slug})).filter(visivelReceita).length;
+  const favs=(await store.getRecipes({favoritas:true})).filter(visivelReceita).length;
   const c=cap();
+  let pend=0;
+  if(c.admin){ try{ pend=(await store.getRecipes()).filter(r=>(r.status||'aprovado')==='pendente').length; }catch(e){} }
   const navItem=(tipo,slug,emoji,label,count)=>`
     <button class="nlink ${view.tipo===tipo&&view.slug===slug?'on':''}" data-nav="${tipo}" data-slug="${slug||''}">
       <span class="e">${emoji}</span>${label}${count!=null?`<span class="ct">${count}</span>`:''}</button>`;
@@ -1050,6 +1153,7 @@ async function renderSidebar(){
     ${navItem('populares',null,'🔥','Populares')}
     ${navItem('salvas',null,'🔖','Salvas',favs)}
     ${c.admin?navItem('admin',null,'🛡️','Administração'):''}
+    ${c.admin?navItem('moderacao',null,'🕓','Moderação',pend||null):''}
     <div class="navlbl">Minha cozinha</div>
     ${navItem('lista',null,'🛒','Lista de compras',(userData.lista||[]).length||null)}
     ${navItem('cardapio',null,'📅','Cardápio')}
@@ -1131,6 +1235,7 @@ function cardHTML(r, selMode, sel){
     <div class="ph" style="background:${c.grad}">${img}${r.imagem?'':`<span class="emoji">${r.emoji||c.emoji}</span>`}
       <span class="dot">${c.nome}</span>
       ${canto}
+      ${(r.status&&r.status!=='aprovado')?`<span class="pend">${r.status==='pendente'?'⏳ Aguardando aprovação':'✕ Rejeitada'}</span>`:''}
     </div>
     <div class="body"><h4>${esc(r.titulo)}</h4>
       <div class="meta"><span class="pchip">⏱️ ${r.tempoMin} min</span><span class="pchip">🍽️ ${esc(r.porcoes||'')}</span><span class="pchip">⭐ ${mediaReceita(r)??'–'}${nReviews(r)?` (${nReviews(r)})`:''}</span></div>
@@ -1186,21 +1291,33 @@ function atualizaSelBar(content){
 }
 async function excluirSelecionadas(){
   if(!selSet.size) return;
-  if(!confirm(`Excluir ${selSet.size} receita(s)? Esta ação não pode ser desfeita.`)) return;
-  const n=selSet.size;
-  for(const id of [...selSet]){ try{ await store.deleteRecipe(id); }catch(e){ console.warn('falha ao excluir',id,e); } }
-  resetSel(); toast(`${n} receita(s) excluída(s)`); renderSidebar(); render();
+  const ids=[...selSet];
+  const snaps=[];
+  for(const id of ids){ try{ const r=await store.getRecipe(id); if(r) snaps.push(r); }catch(e){} }
+  for(const id of ids){ try{ await store.deleteRecipe(id); }catch(e){ console.warn('falha ao excluir',id,e); } }
+  await logAtividade('excluiu receitas', `${snaps.length} item(ns)`);
+  resetSel(); renderSidebar(); render();
+  toastUndo(`${snaps.length} receita(s) excluída(s)`, async()=>{
+    for(const r of snaps){ try{ await store.saveRecipe(r); }catch(e){} }
+    renderSidebar(); render(); toast('Receitas restauradas');
+  });
 }
 
 /* ---------- render principal ---------- */
+function avisoHTML(){
+  if(aviso && aviso.ativo && (aviso.texto||'').trim())
+    return `<div class="aviso"><span class="bi">📣</span><div>${esc(aviso.texto)}</div></div>`;
+  return '';
+}
 function bannerHTML(){
   const c=cap();
-  if(c.admin) return '';
+  const av=avisoHTML();
+  if(c.admin) return av;
   if((usuario||{}).status==='suspenso')
-    return `<div class="banner bad"><span class="bi">⛔</span><div>Seu acesso está <b>suspenso</b>. Você pode navegar, mas não incluir receitas. Fale com o administrador para reativar.</div></div>`;
+    return av+`<div class="banner bad"><span class="bi">⛔</span><div>Seu acesso está <b>suspenso</b>. Você pode navegar, mas não incluir receitas. Fale com o administrador para reativar.</div></div>`;
   if(!c.planoVigente)
-    return `<div class="banner warn"><span class="bi">⏳</span><div>Seu plano está <b>expirado</b>. A inclusão de receitas fica bloqueada até a renovação do acesso.</div></div>`;
-  return '';
+    return av+`<div class="banner warn"><span class="bi">⏳</span><div>Seu plano está <b>expirado</b>. A inclusão de receitas fica bloqueada até a renovação do acesso.</div></div>`;
+  return av;
 }
 function atualizaAddBtn(){
   const b=$('#btnAdd'); if(!b)return; const c=cap();
@@ -1222,6 +1339,11 @@ async function render(){
   else if(view.tipo==='historico') title.innerHTML='Histórico <span>o que você já fez</span>';
   else title.innerHTML=`${catBy(view.slug).nome} <span>receitas da categoria</span>`;
 
+  // tela de carregamento (esqueleto) enquanto o Firebase responde
+  if(view.tipo==='inicio') content.innerHTML=skeletonInicio();
+  else if(['categoria','populares','salvas'].includes(view.tipo) || termo) content.innerHTML=skeletonGrid(8);
+
+  if(view.tipo==='moderacao'){ return renderModeracao(content); }
   if(view.tipo==='admin'){ return renderAdmin(content); }
   if(view.tipo==='lista'){ return renderLista(content); }
   if(view.tipo==='cardapio'){ return renderCardapio(content); }
@@ -1231,7 +1353,7 @@ async function render(){
 
   // busca tem prioridade
   if(termo){
-    const res=await store.getRecipes({busca:termo});
+    const res=await recipesVisiveis({busca:termo});
     content.innerHTML=banner+`<div class="row"><h3>Resultados para “${esc(termo)}”</h3><a id="clr">limpar</a></div>
       ${selToolbarHTML()}
       ${res.length?gradeHTML(res):emptyHTML('Nada encontrado','Tente outro nome ou ingrediente.')}`;
@@ -1240,8 +1362,9 @@ async function render(){
   }
 
   if(view.tipo==='inicio'){
-    const st=await store.stats();
-    const todas=await store.getRecipes();
+    const todas=await recipesVisiveis();
+    const total=todas.length;
+    const tempoMedio=total?Math.round(todas.reduce((s,r)=>s+(+r.tempoMin||0),0)/total):0;
     const destaque=todas.find(r=>r.id==='s3')||todas[0];
     const c=destaque?catBy(destaque.categoria):null;
     let html=banner+`<div class="feat">
@@ -1252,12 +1375,12 @@ async function render(){
         ${destaque?`<span class="go">Ver receita →</span>`:''}
       </div>
       <div class="statwrap">
-        <div class="stat"><div class="n"><em>${st.total}</em></div><span>receitas disponíveis</span></div>
-        <div class="stat"><div class="n">⏱️ <em>${st.tempoMedio}</em>min</div><span>tempo médio de preparo</span></div>
+        <div class="stat"><div class="n"><em>${total}</em></div><span>receitas disponíveis</span></div>
+        <div class="stat"><div class="n">⏱️ <em>${tempoMedio}</em>min</div><span>tempo médio de preparo</span></div>
       </div></div>`;
     // seções por categoria (com itens)
     for(const cat of CATS){
-      const items=(await store.getRecipes({categoria:cat.slug})).slice(0,3);
+      const items=(await recipesVisiveis({categoria:cat.slug})).slice(0,3);
       if(!items.length) continue;
       html+=`<div class="row"><h3>${cat.emoji} ${cat.nome}</h3><a data-go="${cat.slug}">Ver todas →</a></div>
         <div class="grid">${items.map(cardHTML).join('')}</div>`;
@@ -1270,9 +1393,9 @@ async function render(){
 
   // listas (categoria / populares / salvas)
   let list;
-  if(view.tipo==='categoria') list=await store.getRecipes({categoria:view.slug});
-  else if(view.tipo==='salvas') list=await store.getRecipes({favoritas:true});
-  else list=await store.getRecipes();
+  if(view.tipo==='categoria') list=await recipesVisiveis({categoria:view.slug});
+  else if(view.tipo==='salvas') list=await recipesVisiveis({favoritas:true});
+  else list=await recipesVisiveis();
   if(view.tipo==='populares' && fOrdenar==='recentes') list.sort((a,b)=>(mediaReceita(b)||0)-(mediaReceita(a)||0));
   const listaFiltrada=aplicaFiltros(list);
 
@@ -1327,7 +1450,7 @@ async function renderLista(content){
   content.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async e=>{ e.preventDefault(); itens.splice(+b.dataset.rm,1); userData.lista=itens; await salvaUserData(); renderSidebar(); renderLista(content); });
   $('#lcCopy').onclick=()=>{ navigator.clipboard?.writeText(itens.map(i=>'• '+i.texto).join('\n')); toast('Lista copiada 📋'); };
   $('#lcDone').onclick=async()=>{ userData.lista=itens.filter(i=>!i.marcado); await salvaUserData(); renderSidebar(); renderLista(content); };
-  $('#lcClear').onclick=async()=>{ if(!confirm('Limpar toda a lista?'))return; userData.lista=[]; await salvaUserData(); renderSidebar(); renderLista(content); };
+  $('#lcClear').onclick=async()=>{ const snap=[...(userData.lista||[])]; if(!snap.length)return; userData.lista=[]; await salvaUserData(); renderSidebar(); renderLista(content); toastUndo('Lista limpa', async()=>{ userData.lista=snap; await salvaUserData(); renderSidebar(); renderLista(content); toast('Lista restaurada'); }); };
 }
 
 /* ---------- marcar "já fiz" + histórico ---------- */
@@ -1347,7 +1470,7 @@ async function renderHistorico(content){
         <button class="rm" data-h="${i}" title="Remover" style="background:none;color:#ff9a9a">✕</button>
       </div>`).join('')}</div>`;
   content.querySelectorAll('[data-h]').forEach(b=>b.onclick=async()=>{ h.splice(+b.dataset.h,1); userData.historico=h; await salvaUserData(); renderSidebar(); renderHistorico(content); });
-  $('#hClear').onclick=async()=>{ if(!confirm('Apagar todo o histórico?'))return; userData.historico=[]; await salvaUserData(); renderSidebar(); renderHistorico(content); };
+  $('#hClear').onclick=async()=>{ const snap=[...(userData.historico||[])]; if(!snap.length)return; userData.historico=[]; await salvaUserData(); renderSidebar(); renderHistorico(content); toastUndo('Histórico apagado', async()=>{ userData.historico=snap; await salvaUserData(); renderSidebar(); renderHistorico(content); toast('Histórico restaurado'); }); };
 }
 function fmtDataHora(ms){ try{ return new Date(ms).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
 
@@ -1399,6 +1522,50 @@ async function renderCardapio(content){
   ligaArraste();
 }
 function emptyHTML(t,s){return `<div class="empty"><div class="ico">🍳</div><b>${t}</b>${s}</div>`;}
+
+/* ---------- moderação (admin) ---------- */
+async function renderModeracao(content){
+  if(!cap().admin){ content.innerHTML=emptyHTML('Acesso restrito','Esta área é exclusiva de administradores.'); return; }
+  let todas=[]; try{ todas=await store.getRecipes(); }catch(e){ todas=[]; }
+  const pend=todas.filter(r=>(r.status||'aprovado')==='pendente');
+  const rej=todas.filter(r=>r.status==='rejeitado');
+  let html=`<div class="row"><h3>Receitas aguardando aprovação</h3><span class="badge">${pend.length}</span></div>`;
+  html += pend.length
+    ? pend.map(r=>modCard(r)).join('')
+    : emptyHTML('Tudo em dia ✨','Nenhuma receita pendente de aprovação no momento.');
+  if(rej.length){
+    html+=`<div class="secblk">Rejeitadas</div>`+rej.map(r=>modCard(r,true)).join('');
+  }
+  content.innerHTML=html;
+  content.querySelectorAll('[data-mod]').forEach(b=>b.onclick=()=>moderar(b.dataset.id,b.dataset.mod));
+  content.querySelectorAll('[data-vw]').forEach(b=>b.onclick=()=>openRecipe(b.dataset.vw));
+}
+function modCard(r,rejeitada){
+  const c=catBy(r.categoria);
+  return `<div class="modcard">
+    <span class="emoji">${r.emoji||c.emoji}</span>
+    <div style="min-width:0">
+      <b>${esc(r.titulo)}</b>
+      <div class="who">${c.nome} · por ${esc(r.autorNome||r.autorId||'usuário')}</div>
+    </div>
+    <div class="acts">
+      <button class="vw" data-vw="${r.id}">👁 Ver</button>
+      ${rejeitada
+        ? `<button class="ap" data-mod="aprovar" data-id="${r.id}">✓ Aprovar</button>`
+        : `<button class="ap" data-mod="aprovar" data-id="${r.id}">✓ Aprovar</button>
+           <button class="rj" data-mod="rejeitar" data-id="${r.id}">✕ Rejeitar</button>`}
+    </div></div>`;
+}
+async function moderar(id,acao){
+  try{
+    const r=await store.getRecipe(id); if(!r) return;
+    r.status = acao==='aprovar' ? 'aprovado' : 'rejeitado';
+    await store.saveRecipe(r);
+    await logAtividade(acao==='aprovar'?'aprovou receita':'rejeitou receita', r.titulo);
+    toast(acao==='aprovar'?'Receita aprovada ✓':'Receita rejeitada');
+    renderSidebar(); render();
+  }catch(e){ toast('Não foi possível concluir'); }
+}
 
 /* ---------- painel de administração ---------- */
 function acessoTexto(u){
@@ -1467,7 +1634,10 @@ async function renderAdmin(content){
   content.innerHTML=`
     <div class="adminhead">
       <button class="addbtn" id="btnNewUser">＋ Novo usuário</button>
-      <button class="bsoft" id="btnCSV" style="margin-left:8px">⬇️ Exportar CSV</button>
+      <button class="bsoft" id="btnCSV" style="margin-left:8px">⬇️ CSV</button>
+      <button class="bsoft" id="btnBackup" style="margin-left:8px">💾 Backup</button>
+      <button class="bsoft" id="btnImport" style="margin-left:8px">⬆️ Importar</button>
+      <input type="file" id="impFile" accept="application/json,.json" style="display:none">
       <div class="kpi">
         <div class="box"><b>${total}</b>usuários</div>
         <div class="box"><b>${comAcesso}</b>com acesso</div>
@@ -1486,6 +1656,17 @@ async function renderAdmin(content){
       <thead><tr><th class="ckcol"><input type="checkbox" id="uall" title="Selecionar todos"></th><th>Usuário</th><th>Situação</th><th>Acesso</th><th style="text-align:right">Ações</th></tr></thead>
       <tbody>${lista.length?lista.map(linha).join(''):`<tr><td colspan="5" style="text-align:center;color:var(--mut2);border-radius:12px">Nenhum usuário encontrado.</td></tr>`}</tbody>
     </table>
+    <div class="secblk">📣 Aviso para os usuários</div>
+    <div class="avisoedit">
+      <textarea id="avTexto" placeholder="Ex.: Novas receitas de festa junina chegando esta semana! 🎉">${esc((aviso&&aviso.texto)||'')}</textarea>
+      <div class="rowf">
+        <label class="ck"><input type="checkbox" id="avAtivo" ${aviso&&aviso.ativo?'checked':''}> Mostrar no topo para todos</label>
+        <span style="flex:1"></span>
+        <button class="bacc" id="avSalvar">Salvar aviso</button>
+      </div>
+    </div>
+    <div class="secblk">🧾 Atividade recente</div>
+    <div class="logbox" id="logbox"><div class="logrow"><span style="color:var(--mut2)">Carregando…</span></div></div>
     <p style="color:var(--mut2);font-size:12.5px;margin-top:16px;line-height:1.6">
       🔒 Lembrete: estas permissões precisam ser garantidas também pelas
       <b>Regras de Segurança do Firestore</b>. As verificações no navegador são só para a
@@ -1496,6 +1677,23 @@ async function renderAdmin(content){
   content.querySelectorAll('[data-filtro]').forEach(b=>b.onclick=()=>{adminFiltro=b.dataset.filtro;renderAdmin(content);});
   $('#btnNewUser').onclick=()=>openUserForm();
   $('#btnCSV').onclick=()=>exportarUsuariosCSV();
+  $('#btnBackup').onclick=()=>exportarBackup();
+  $('#btnImport').onclick=()=>$('#impFile').click();
+  $('#impFile').onchange=e=>{ const f=e.target.files[0]; if(f) importarBackup(f); e.target.value=''; };
+  $('#avSalvar').onclick=async()=>{
+    aviso={texto:$('#avTexto').value.trim(), ativo:$('#avAtivo').checked, ts:Date.now()};
+    try{ await store.setConfig('aviso',aviso); await logAtividade('atualizou aviso',''); toast(aviso.ativo?'Aviso salvo e publicado':'Aviso salvo'); render(); }
+    catch(e){ toast('Não foi possível salvar o aviso'); }
+  };
+  (async()=>{
+    const box=$('#logbox'); if(!box) return;
+    try{
+      const logs=await store.getLogs();
+      box.innerHTML = logs.length
+        ? logs.map(l=>`<div class="logrow"><span><span class="q">${esc(l.quem||'?')}</span> ${esc(l.acao||'')}${l.alvo?` — ${esc(l.alvo)}`:''}</span><span class="t">${l.ts?fmtDataHora(l.ts):''}</span></div>`).join('')
+        : `<div class="logrow"><span style="color:var(--mut2)">Sem atividade registrada ainda.</span></div>`;
+    }catch(e){ box.innerHTML=`<div class="logrow"><span style="color:var(--mut2)">Logs indisponíveis — verifique se as Regras foram publicadas.</span></div>`; }
+  })();
   montaGraficos();
   const as=$('#aSearch'); if(as){ let t; as.oninput=e=>{clearTimeout(t);t=setTimeout(()=>{adminBusca=e.target.value;renderAdmin(content);},180);}; as.focus(); as.setSelectionRange(as.value.length,as.value.length); }
   // seleção múltipla de usuários
@@ -1537,6 +1735,35 @@ function exportarUsuariosCSV(){
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
   toast('CSV exportado ⬇️');
 }
+/* backup completo das receitas (download .json) */
+async function exportarBackup(){
+  try{
+    const receitas=await store.getRecipes();
+    const categorias=await store.getCategories();
+    const blob=new Blob([JSON.stringify({app:'Mise',versao:1,exportadoEm:Date.now(),receitas,categorias},null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download=`mise-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    await logAtividade('exportou backup', `${receitas.length} receita(s)`);
+    toast('Backup baixado 💾');
+  }catch(e){ toast('Não foi possível exportar o backup'); }
+}
+/* restaura receitas de um arquivo de backup (.json) */
+function importarBackup(file){
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const data=JSON.parse(rd.result);
+      const recs = Array.isArray(data) ? data : (data.receitas||[]);
+      if(!Array.isArray(recs) || !recs.length){ toast('Arquivo sem receitas válidas'); return; }
+      let n=0;
+      for(const r of recs){ try{ await store.saveRecipe(r); n++; }catch(e){} }
+      await logAtividade('importou backup', `${n} receita(s)`);
+      toast(`${n} receita(s) importada(s) ✓`); renderSidebar(); render();
+    }catch(e){ toast('Não consegui ler o arquivo (precisa ser um backup .json do Mise)'); }
+  };
+  rd.readAsText(file);
+}
 function atualizaUbar(){
   let bar=document.getElementById('ubar');
   if(selUserSet.size){
@@ -1560,9 +1787,14 @@ async function acaoMassaUsuarios(tipo){
   if(!selUserSet.size) return;
   const ids=[...selUserSet];
   if(tipo==='excluir'){
-    if(!confirm(`Excluir ${ids.length} usuário(s)? Esta ação não pode ser desfeita.`)) return;
-    for(const id of ids){ if(usuario && id===usuario.id) continue; try{ await store.deleteUser(id); }catch(e){ console.warn(e); } }
-    toast(`${ids.length} usuário(s) excluído(s)`);
+    const snaps=[];
+    for(const id of ids){ if(usuario && id===usuario.id) continue; try{ const u=await store.getUser(id); if(u) snaps.push(u); }catch(e){} }
+    for(const u of snaps){ try{ await store.deleteUser(u.id); }catch(e){ console.warn(e); } }
+    await logAtividade('excluiu usuários', `${snaps.length} conta(s)`);
+    selUserSet.clear(); const b0=document.getElementById('ubar'); if(b0) b0.classList.remove('on');
+    await refreshSessao(); renderSidebar(); renderAdmin($('#content'));
+    toastUndo(`${snaps.length} usuário(s) excluído(s)`, async()=>{ for(const u of snaps){ try{ await store.saveUser(u); }catch(e){} } await refreshSessao(); renderSidebar(); renderAdmin($('#content')); toast('Usuários restaurados'); });
+    return;
   } else if(tipo==='suspender'){
     for(const id of ids){ const u=await store.getUser(id); if(!u||u.role==='admin')continue; u.status='suspenso'; try{ await store.saveUser(u); }catch(e){ console.warn(e); } }
     toast('Usuários suspensos (admins ignorados)');
@@ -1593,8 +1825,15 @@ async function acaoAdmin(act,id,btn){
   else if(act==='+90'){ u.status='ativo'; u.vitalicio=false; u.planoAte=base+90*86400000; await store.saveUser(u); toast('+90 dias de acesso'); }
   else if(act==='vitalicio'){ u.status='ativo'; u.vitalicio=true; u.planoAte=null; await store.saveUser(u); toast('Acesso indeterminado concedido ∞'); }
   else if(act==='remacesso'){ u.vitalicio=false; u.planoAte=null; await store.saveUser(u); toast('Acesso removido'); }
-  else if(act==='role'){ u.role=u.role==='admin'?'user':'admin'; await store.saveUser(u); toast(u.role==='admin'?'Promovido a admin':'Agora é usuário'); }
-  else if(act==='excluir'){ if(!confirm(`Excluir o usuário ${u.nome}?`))return; await store.deleteUser(id); toast('Usuário excluído'); }
+  else if(act==='role'){ u.role=u.role==='admin'?'user':'admin'; await store.saveUser(u); await logAtividade(u.role==='admin'?'promoveu a admin':'rebaixou para usuário', u.nome); toast(u.role==='admin'?'Promovido a admin':'Agora é usuário'); }
+  else if(act==='excluir'){
+    const snap={...u};
+    await store.deleteUser(id); await logAtividade('excluiu usuário', u.nome);
+    await refreshSessao(); renderSidebar(); renderAdmin($('#content'));
+    toastUndo(`Usuário “${u.nome}” excluído`, async()=>{ await store.saveUser(snap); await refreshSessao(); renderSidebar(); renderAdmin($('#content')); toast('Usuário restaurado'); });
+    return;
+  }
+  if(['suspender','reativar','+7','+30','+90','vitalicio','remacesso'].includes(act)) await logAtividade('alterou acesso', u.nome+' · '+act);
   await refreshSessao(); renderSidebar();
   renderAdmin($('#content'));
 }
@@ -1763,9 +2002,10 @@ async function openRecipe(id){
   m.querySelector('[data-favm]').onclick=async ev=>{const on=await store.toggleFavorite(id);ev.target.textContent=on?'🔖 Salva':'🤍 Salvar';renderSidebar();render();};
   const bEdit=m.querySelector('[data-edit]'); if(bEdit) bEdit.onclick=()=>{openForm(r);};
   const bDel=m.querySelector('[data-del]'); if(bDel) bDel.onclick=async()=>{
-    if(confirm('Excluir esta receita? Esta ação não pode ser desfeita.')){
-      await store.deleteRecipe(id); closeOverlay(); toast('Receita excluída'); renderSidebar(); render();
-    }
+    const snap={...r};
+    await store.deleteRecipe(id); closeOverlay(); await logAtividade('excluiu receita', r.titulo);
+    renderSidebar(); render();
+    toastUndo('Receita excluída', async()=>{ await store.saveRecipe(snap); await recarregaReviews(); renderSidebar(); render(); toast('Receita restaurada'); });
   };
   // ações novas
   m.querySelector('[data-cook]').onclick=()=>abrirModoCozinhar(r,fator);
@@ -1998,9 +2238,13 @@ function openForm(r){
     const titulo=m.querySelector('#f_titulo').value.trim();
     if(!titulo){ const t=m.querySelector('#f_titulo'); t.focus(); t.style.borderColor='#ff8a8a'; return; }
     const tags=[...m.querySelectorAll('[data-ftag].on')].map(b=>b.dataset.ftag);
+    // moderação: admin publica direto (aprovado); usuário entra como pendente
+    const status = editing ? (r.status||'aprovado') : (cap().admin ? 'aprovado' : 'pendente');
     const rec={
       id: editing?r.id:undefined, favorito: editing?r.favorito:false, criadoEm: editing?r.criadoEm:undefined,
       autorId: editing?(r.autorId||null):(usuario?usuario.id:null),
+      autorNome: editing?(r.autorNome||(usuario?usuario.nome:'')||''):((usuario&&usuario.nome)||''),
+      status,
       titulo, categoria:m.querySelector('#f_cat').value, emoji:m.querySelector('#f_emoji').value.trim(),
       imagem: inputImg?inputImg.value.trim():(editing?(r.imagem||''):''),
       tempoMin:+m.querySelector('#f_tempo').value||0, porcoes:m.querySelector('#f_porc').value.trim(), dificuldade:m.querySelector('#f_dif').value,
@@ -2009,7 +2253,10 @@ function openForm(r){
       preparo:[...boxPrep.querySelectorAll('.steprow textarea')].map(t=>t.value.trim()).filter(Boolean),
     };
     if(!rec.ingredientes.length){ toast('Adicione pelo menos um ingrediente'); return; }
-    await store.saveRecipe(rec); closeOverlay(); toast(editing?'Receita atualizada':'Receita adicionada ✨');
+    await store.saveRecipe(rec);
+    await logAtividade(editing?'editou receita':'criou receita', rec.titulo);
+    closeOverlay();
+    toast(editing ? 'Receita atualizada' : (status==='pendente' ? 'Enviada! Aguardando aprovação do admin' : 'Receita adicionada ✨'));
     renderSidebar(); render();
   };
   showOverlay(m, true);
@@ -2037,6 +2284,14 @@ document.addEventListener('click',e=>{ if(!e.target.closest('.menu')) document.q
 
 // expõe boot() para o carregador de módulo iniciar o app (Firebase ou local)
 window.boot = boot;
+</script>
+<script>
+  // PWA: registra o service worker (só funciona em https, como o GitHub Pages)
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    window.addEventListener('load',()=>{
+      navigator.serviceWorker.register('sw.js').catch(e=>console.info('SW não registrado:',e));
+    });
+  }
 </script>
 </body>
 </html>

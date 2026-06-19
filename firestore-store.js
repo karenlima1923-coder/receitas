@@ -101,7 +101,7 @@ export class FirestoreStore /* implements RecipeStore */ {
   async saveRecipe(rec) {
     if (rec.id) {
       const { id, ...rest } = rec;
-      await updateDoc(doc(this.db, "receitas", id), rest);
+      await setDoc(doc(this.db, "receitas", id), rest);   // setDoc: atualiza OU recria (necessário p/ "Desfazer")
       return rec;
     }
     const { id, ...rest } = rec;
@@ -183,6 +183,18 @@ export class FirestoreStore /* implements RecipeStore */ {
     return d.exists() ? d.data() : {};
   }
   async saveUserData(uid, data) { await setDoc(doc(this.db, "userdata", uid), data); }
+
+  /* ---- avisos/config (coleção "config") e logs (coleção "logs") ---- */
+  async getConfig(k) {
+    try { const d = await getDoc(doc(this.db, "config", k)); return d.exists() ? d.data().v : null; }
+    catch(e){ return null; }
+  }
+  async setConfig(k, v) { await setDoc(doc(this.db, "config", k), { v }); }
+  async addLog(e) { try { await addDoc(collection(this.db, "logs"), { ...e, ts: Date.now() }); } catch(err){} }
+  async getLogs() {
+    const snap = await getDocs(collection(this.db, "logs"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,50);
+  }
 }
 
 /* ============================================================================
@@ -221,15 +233,29 @@ export class FirestoreStore /* implements RecipeStore */ {
          allow write: if ehAdmin();
        }
 
-       // receitas: todos leem; cria só com acesso ativo;
+       // receitas: todos leem; cria só com acesso ativo (não-admin entra como 'pendente');
        // edita/exclui se for o dono ou admin; QUALQUER logado pode +1 view
        match /receitas/{id} {
          allow read: if true;
-         allow create: if acessoAtivo();
+         allow create: if acessoAtivo()
+           && (ehAdmin() || request.resource.data.status == 'pendente');
          allow update: if resource.data.autorId == request.auth.uid || ehAdmin()
            || (logado() &&
                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']));
          allow delete: if resource.data.autorId == request.auth.uid || ehAdmin();
+       }
+
+       // avisos / configurações públicas: todos leem, só admin escreve
+       match /config/{id} {
+         allow read: if true;
+         allow write: if ehAdmin();
+       }
+
+       // logs de atividade: qualquer logado registra; só admin lê/gerencia
+       match /logs/{id} {
+         allow read: if ehAdmin();
+         allow create: if logado();
+         allow update, delete: if ehAdmin();
        }
 
        // avaliações: todos leem; cria/edita a própria; admin/dono apaga
