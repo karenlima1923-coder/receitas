@@ -101,6 +101,35 @@
   .afilters button:hover{color:#fff}
   .afilters button.on{background:var(--acc);color:var(--acc-on);border-color:transparent}
   .field .seg2{display:flex;gap:8px;flex-wrap:wrap}
+  /* olho mostrar/ocultar senha */
+  .pwrap{position:relative}
+  .pwrap input{padding-right:44px}
+  .eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:16px;color:var(--mut);background:none}
+  .eye:hover{background:rgba(255,255,255,.06);color:#fff}
+  /* seleção múltipla de receitas */
+  .seltool{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .seltool button{font-size:13.5px;font-weight:600;padding:9px 14px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#cdd6dd}
+  .seltool button.on{background:var(--acc);color:var(--acc-on);border-color:transparent}
+  .seltool span{font-size:13px;color:var(--mut)}
+  .grid.selecting .card{cursor:pointer}
+  .grid.selecting .card .fav{display:none}
+  .card.sel{outline:2px solid var(--acc);outline-offset:2px}
+  .card .ckbox{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:8px;border:2px solid rgba(255,255,255,.8);background:rgba(10,12,16,.55);display:grid;place-items:center;font-size:15px;color:transparent;z-index:2}
+  .card .ckbox.on{background:var(--acc);border-color:var(--acc);color:#fff}
+  /* barra flutuante de ações em massa */
+  .selbar,.ubar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);z-index:200;
+    display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);
+    padding:11px 14px 11px 18px;border-radius:14px;box-shadow:0 20px 50px -20px #000;opacity:0;pointer-events:none;transition:.2s}
+  .selbar.on,.ubar.on{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+  .selbar span,.ubar span{font-size:13.5px;font-weight:600}
+  .selbar .bacc,.ubar button{padding:9px 14px;border-radius:10px;font-size:13.5px;font-weight:700}
+  .ubar button{background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cdd6dd}
+  .ubar button.del{color:#ff9a9a;border-color:rgba(255,90,90,.35)}
+  .ubar button.x{color:var(--mut)}
+  /* checkboxes do admin */
+  .utable input[type=checkbox],.eye + *{accent-color:var(--acc)}
+  .utable .ckcol{width:36px;text-align:center}
+  .utable input[type=checkbox]{width:17px;height:17px;cursor:pointer;accent-color:var(--acc)}
   .uacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .uacts button{font-size:12px;font-weight:600;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cdd6dd;transition:.15s}
   .uacts button:hover{background:rgba(255,255,255,.12);color:#fff}
@@ -548,6 +577,8 @@ const SEED_USERS=[
 let store, auth, CATS=[], view={tipo:'inicio'}, termo='';
 let usuario=null, USERS=[];
 let adminFiltro='todos', adminBusca='';
+let selModo=false; const selSet=new Set();      // seleção múltipla de receitas
+const selUserSet=new Set();                     // seleção múltipla de usuários
 
 async function boot(){
   if(window.__booted) return; window.__booted=true;
@@ -639,7 +670,9 @@ function renderLogin(modo){
       <div class="autherr" id="autherr"></div>
       ${modo==='criar'?`<div class="field"><label>Nome</label><input id="a_nome" placeholder="Seu nome"></div>`:''}
       <div class="field"><label>E-mail</label><input id="a_email" type="email" placeholder="email@exemplo.com" autocomplete="username"></div>
-      <div class="field"><label>Senha</label><input id="a_senha" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      <div class="field"><label>Senha</label>
+        <div class="pwrap"><input id="a_senha" type="password" placeholder="••••••••" autocomplete="current-password"><button type="button" class="eye" id="a_eye" aria-label="Mostrar senha" title="Mostrar/ocultar senha">👁️</button></div>
+      </div>
       ${modo==='entrar'?`<div style="text-align:right;margin:-6px 0 10px"><a id="a_forgot" style="font-size:13px;color:var(--acc-bright);cursor:pointer">Esqueci minha senha</a></div>`:''}
       <button class="bacc" id="a_go">${modo==='entrar'?'Entrar':'Criar conta e entrar'}</button>
       ${(modo==='entrar' && !window.MODO_FIREBASE)?`
@@ -658,6 +691,7 @@ function renderLogin(modo){
   const erro=msg=>{const e=$('#autherr');e.textContent=msg;e.classList.add('on');};
   g.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>fazerLogin(b.dataset.demo, b.dataset.demo==='maria@mise.app'?'admin123':'123456').catch(err=>erro(traduzErroAuth(err))));
   const fg=$('#a_forgot'); if(fg) fg.onclick=()=>renderLogin('recuperar');
+  const eye=$('#a_eye'); if(eye) eye.onclick=()=>{ const i=$('#a_senha'); const show=i.type==='password'; i.type=show?'text':'password'; eye.textContent=show?'🙈':'👁️'; i.focus(); };
   $('#a_go').onclick=async()=>{
     $('#autherr').classList.remove('on');
     try{
@@ -741,6 +775,7 @@ async function renderSidebar(){
     <button class="logoutbtn" id="btnLogout">↩ Sair</button>`;
 
   $('#sidebar').querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{
+    resetSel();
     view={tipo:b.dataset.nav,slug:b.dataset.slug||undefined}; termo=''; $('#search').value='';
     renderSidebar(); render(); window.scrollTo({top:0,behavior:'smooth'});
   });
@@ -783,13 +818,16 @@ function escalaPorcoes(texto,fator){
 }
 
 /* ---------- card ---------- */
-function cardHTML(r){
+function cardHTML(r, selMode, sel){
   const c=catBy(r.categoria);
   const img=r.imagem?`<img src="${esc(r.imagem)}" alt="" loading="lazy" onerror="this.remove()">`:'';
-  return `<article class="card" data-open="${r.id}">
+  const canto = selMode
+    ? `<div class="ckbox ${sel?'on':''}">✓</div>`
+    : `<button class="fav ${r.favorito?'on':''}" data-fav="${r.id}" title="Salvar">${r.favorito?'🔖':'🤍'}</button>`;
+  return `<article class="card ${sel?'sel':''}" data-open="${r.id}">
     <div class="ph" style="background:${c.grad}">${img}<span class="emoji">${r.emoji||c.emoji}</span>
       <span class="dot">${c.nome}</span>
-      <button class="fav ${r.favorito?'on':''}" data-fav="${r.id}" title="Salvar">${r.favorito?'🔖':'🤍'}</button>
+      ${canto}
     </div>
     <div class="body"><h4>${esc(r.titulo)}</h4>
       <div class="meta"><span class="pchip">⏱️ ${r.tempoMin} min</span><span class="pchip">🍽️ ${esc(r.porcoes||'')}</span><span class="pchip">⭐ ${r.rating??'–'}</span></div>
@@ -801,6 +839,53 @@ function bindCards(scope){
     e.stopPropagation(); await store.toggleFavorite(b.dataset.fav);
     renderSidebar(); render();
   });
+}
+
+/* ---------- seleção múltipla de receitas (admin) ---------- */
+function resetSel(){ selModo=false; selSet.clear(); selUserSet.clear();
+  const b=document.getElementById('selbar'); if(b) b.classList.remove('on');
+  const u=document.getElementById('ubar'); if(u) u.classList.remove('on'); }
+function selToolbarHTML(){
+  if(!cap().gereTudo) return '';
+  return `<div class="seltool">
+    <button id="selToggle" class="${selModo?'on':''}">${selModo?'✕ Cancelar seleção':'☑️ Selecionar para excluir'}</button>
+    ${selModo?`<span id="selInfo">${selSet.size} selecionada(s)</span>`:''}
+  </div>`;
+}
+function gradeHTML(list){
+  return `<div class="grid ${selModo?'selecting':''}">${list.map(r=>cardHTML(r,selModo,selSet.has(r.id))).join('')}</div>`;
+}
+function ligaGrade(content){
+  const tog=content.querySelector('#selToggle');
+  if(tog) tog.onclick=()=>{ selModo=!selModo; selSet.clear(); render(); };
+  content.querySelectorAll('[data-open]').forEach(c=>c.onclick=e=>{
+    if(selModo){ const id=c.dataset.open; if(selSet.has(id)){selSet.delete(id);c.classList.remove('sel');}else{selSet.add(id);c.classList.add('sel');}
+      const ck=c.querySelector('.ckbox'); if(ck) ck.classList.toggle('on',selSet.has(id)); atualizaSelBar(content); return; }
+    if(e.target.closest('[data-fav]'))return; openRecipe(id_of(c));
+  });
+  content.querySelectorAll('[data-fav]').forEach(b=>b.onclick=async e=>{ e.stopPropagation(); await store.toggleFavorite(b.dataset.fav); renderSidebar(); render(); });
+  atualizaSelBar(content);
+}
+function id_of(c){ return c.dataset.open; }
+function atualizaSelBar(content){
+  const info=content.querySelector('#selInfo'); if(info) info.textContent=`${selSet.size} selecionada(s)`;
+  let bar=document.getElementById('selbar');
+  if(selModo && selSet.size){
+    if(!bar){
+      bar=el(`<div class="selbar" id="selbar"><span id="selN"></span><button class="bacc" id="selDel">🗑 Excluir selecionadas</button></div>`);
+      document.body.appendChild(bar);
+      bar.querySelector('#selDel').onclick=excluirSelecionadas;
+    }
+    bar.querySelector('#selN').textContent=`${selSet.size} selecionada(s)`;
+    bar.classList.add('on');
+  } else if(bar){ bar.classList.remove('on'); }
+}
+async function excluirSelecionadas(){
+  if(!selSet.size) return;
+  if(!confirm(`Excluir ${selSet.size} receita(s)? Esta ação não pode ser desfeita.`)) return;
+  const n=selSet.size;
+  for(const id of [...selSet]){ try{ await store.deleteRecipe(id); }catch(e){ console.warn('falha ao excluir',id,e); } }
+  resetSel(); toast(`${n} receita(s) excluída(s)`); renderSidebar(); render();
 }
 
 /* ---------- render principal ---------- */
@@ -838,9 +923,10 @@ async function render(){
   if(termo){
     const res=await store.getRecipes({busca:termo});
     content.innerHTML=banner+`<div class="row"><h3>Resultados para “${esc(termo)}”</h3><a id="clr">limpar</a></div>
-      ${res.length?`<div class="grid">${res.map(cardHTML).join('')}</div>`:emptyHTML('Nada encontrado','Tente outro nome ou ingrediente.')}`;
-    $('#clr').onclick=()=>{termo='';$('#search').value='';render();};
-    bindCards(content); return;
+      ${selToolbarHTML()}
+      ${res.length?gradeHTML(res):emptyHTML('Nada encontrado','Tente outro nome ou ingrediente.')}`;
+    $('#clr').onclick=()=>{termo='';resetSel();$('#search').value='';render();};
+    ligaGrade(content); return;
   }
 
   if(view.tipo==='inicio'){
@@ -867,7 +953,7 @@ async function render(){
         <div class="grid">${items.map(cardHTML).join('')}</div>`;
     }
     content.innerHTML=html;
-    content.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{view={tipo:'categoria',slug:a.dataset.go};renderSidebar();render();});
+    content.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{resetSel();view={tipo:'categoria',slug:a.dataset.go};renderSidebar();render();});
     const f=content.querySelector('.feature[data-open]'); if(f) f.onclick=()=>openRecipe(f.dataset.open);
     bindCards(content); return;
   }
@@ -884,8 +970,8 @@ async function render(){
       : emptyHTML('Categoria vazia','Adicione a primeira receita com o botão “Nova receita”.'));
     return;
   }
-  content.innerHTML=banner+`<div class="grid">${list.map(cardHTML).join('')}</div>`;
-  bindCards(content);
+  content.innerHTML=banner+selToolbarHTML()+gradeHTML(list);
+  ligaGrade(content);
 }
 function emptyHTML(t,s){return `<div class="empty"><div class="ico">🍳</div><b>${t}</b>${s}</div>`;}
 
@@ -900,6 +986,7 @@ async function renderAdmin(content){
   if(!cap().admin){ content.innerHTML=emptyHTML('Acesso restrito','Esta área é exclusiva de administradores.'); return; }
   try{ USERS=await store.getUsers(); }
   catch(e){ content.innerHTML=emptyHTML('Não foi possível carregar os usuários','Confira as Regras de Segurança: a coleção "usuarios" precisa permitir listagem para admin. Detalhe no console (F12).'); return; }
+  selUserSet.clear();
   const total=USERS.length;
   const comAcesso=USERS.filter(u=>u.role==='admin'||(u.status==='ativo'&&planoVigente(u))).length;
   const suspensos=USERS.filter(u=>u.status==='suspenso').length;
@@ -925,6 +1012,7 @@ async function renderAdmin(content){
       : vig ? '<span class="tag ok">✓ Ativo</span>' : '<span class="tag exp">⏳ Expirado</span>';
     const eu = usuario && u.id===usuario.id;
     return `<tr>
+      <td class="ckcol"><input type="checkbox" class="uck" data-uid="${u.id}" ${eu?'disabled':''}></td>
       <td><div class="uname"><div class="av">${esc(ini)}</div><div><b>${esc(u.nome)}${eu?' (você)':''}</b><span>${esc(u.email||'')}</span></div></div></td>
       <td>${statusTag}</td>
       <td>${esc(acessoTexto(u))}</td>
@@ -968,8 +1056,8 @@ async function renderAdmin(content){
       </div>
     </div>
     <table class="utable">
-      <thead><tr><th>Usuário</th><th>Situação</th><th>Acesso</th><th style="text-align:right">Ações</th></tr></thead>
-      <tbody>${lista.length?lista.map(linha).join(''):`<tr><td colspan="4" style="text-align:center;color:var(--mut2);border-radius:12px">Nenhum usuário encontrado.</td></tr>`}</tbody>
+      <thead><tr><th class="ckcol"><input type="checkbox" id="uall" title="Selecionar todos"></th><th>Usuário</th><th>Situação</th><th>Acesso</th><th style="text-align:right">Ações</th></tr></thead>
+      <tbody>${lista.length?lista.map(linha).join(''):`<tr><td colspan="5" style="text-align:center;color:var(--mut2);border-radius:12px">Nenhum usuário encontrado.</td></tr>`}</tbody>
     </table>
     <p style="color:var(--mut2);font-size:12.5px;margin-top:16px;line-height:1.6">
       🔒 Lembrete: estas permissões precisam ser garantidas também pelas
@@ -981,6 +1069,44 @@ async function renderAdmin(content){
   content.querySelectorAll('[data-filtro]').forEach(b=>b.onclick=()=>{adminFiltro=b.dataset.filtro;renderAdmin(content);});
   $('#btnNewUser').onclick=()=>openUserForm();
   const as=$('#aSearch'); if(as){ let t; as.oninput=e=>{clearTimeout(t);t=setTimeout(()=>{adminBusca=e.target.value;renderAdmin(content);},180);}; as.focus(); as.setSelectionRange(as.value.length,as.value.length); }
+  // seleção múltipla de usuários
+  const cks=[...content.querySelectorAll('.uck')];
+  cks.forEach(ck=>ck.onchange=()=>{ ck.checked?selUserSet.add(ck.dataset.uid):selUserSet.delete(ck.dataset.uid); atualizaUbar(); });
+  const uall=$('#uall'); if(uall) uall.onchange=()=>{ cks.forEach(ck=>{ if(ck.disabled)return; ck.checked=uall.checked; ck.checked?selUserSet.add(ck.dataset.uid):selUserSet.delete(ck.dataset.uid); }); atualizaUbar(); };
+  atualizaUbar();
+}
+function atualizaUbar(){
+  let bar=document.getElementById('ubar');
+  if(selUserSet.size){
+    if(!bar){
+      bar=el(`<div class="ubar" id="ubar">
+        <span id="ubarN"></span>
+        <button class="susp" id="ubarSusp">Suspender</button>
+        <button class="del" id="ubarDel">🗑 Excluir</button>
+        <button class="x" id="ubarX">Cancelar</button>
+      </div>`);
+      document.body.appendChild(bar);
+      bar.querySelector('#ubarDel').onclick=()=>acaoMassaUsuarios('excluir');
+      bar.querySelector('#ubarSusp').onclick=()=>acaoMassaUsuarios('suspender');
+      bar.querySelector('#ubarX').onclick=()=>{ selUserSet.clear(); document.querySelectorAll('.uck').forEach(c=>c.checked=false); const u=$('#uall'); if(u)u.checked=false; atualizaUbar(); };
+    }
+    bar.querySelector('#ubarN').textContent=`${selUserSet.size} selecionado(s)`;
+    bar.classList.add('on');
+  } else if(bar){ bar.classList.remove('on'); }
+}
+async function acaoMassaUsuarios(tipo){
+  if(!selUserSet.size) return;
+  const ids=[...selUserSet];
+  if(tipo==='excluir'){
+    if(!confirm(`Excluir ${ids.length} usuário(s)? Esta ação não pode ser desfeita.`)) return;
+    for(const id of ids){ if(usuario && id===usuario.id) continue; try{ await store.deleteUser(id); }catch(e){ console.warn(e); } }
+    toast(`${ids.length} usuário(s) excluído(s)`);
+  } else if(tipo==='suspender'){
+    for(const id of ids){ const u=await store.getUser(id); if(!u||u.role==='admin')continue; u.status='suspenso'; try{ await store.saveUser(u); }catch(e){ console.warn(e); } }
+    toast('Usuários suspensos (admins ignorados)');
+  }
+  selUserSet.clear(); const b=document.getElementById('ubar'); if(b) b.classList.remove('on');
+  await refreshSessao(); renderSidebar(); renderAdmin($('#content'));
 }
 
 async function acaoAdmin(act,id,btn){
@@ -1259,7 +1385,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlay();});
 let tT; function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
 
 /* ---------- busca ---------- */
-let sT; $('#search').addEventListener('input',e=>{clearTimeout(sT);sT=setTimeout(()=>{termo=e.target.value.trim();render();},180);});
+let sT; $('#search').addEventListener('input',e=>{clearTimeout(sT);sT=setTimeout(()=>{resetSel();termo=e.target.value.trim();render();},180);});
 $('#btnAdd').onclick=()=>openForm();
 document.addEventListener('click',e=>{ if(!e.target.closest('.menu')) document.querySelectorAll('.pop.on').forEach(p=>p.classList.remove('on')); });
 
