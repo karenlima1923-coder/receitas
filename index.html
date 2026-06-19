@@ -553,20 +553,23 @@ async function boot(){
   if(window.__booted) return; window.__booted=true;
   const firebase = !!(window.FirestoreStore && window.FirebaseAuthProvider);
   window.MODO_FIREBASE = firebase;
-  if(firebase){
-    store=new window.FirestoreStore(); await store.init();
-    auth =new window.FirebaseAuthProvider(store);
-  }else{
-    try{ store=new IndexedDBStore(); await store.init(); }
-    catch(e){ console.warn('IndexedDB indisponível, usando memória:',e); store=new MemoryStore(); }
-    auth =new LocalAuth(store);
-  }
+  try{
+    if(firebase){
+      store=new window.FirestoreStore(); await store.init();
+      auth =new window.FirebaseAuthProvider(store);
+    }else{
+      try{ store=new IndexedDBStore(); await store.init(); }
+      catch(e){ console.warn('IndexedDB indisponível, usando memória:',e); store=new MemoryStore(); }
+      auth =new LocalAuth(store);
+    }
+  }catch(e){ console.error('Falha ao iniciar o armazenamento:',e); }
   // seed: no Firebase, semeia só categorias/receitas (usuários vêm do Auth)
   try{ await store.seedIfEmpty(SEED_CATS,SEED_RECIPES, firebase?undefined:SEED_USERS); }
   catch(e){ console.warn('Não foi possível semear os dados iniciais:',e); }
-  CATS=await store.getCategories();
-  USERS=await store.getUsers();
-  usuario=await auth.current();
+  try{ CATS=await store.getCategories(); }catch(e){ console.warn('getCategories falhou:',e); CATS=[]; }
+  try{ usuario=await auth.current(); }catch(e){ console.warn('current() falhou:',e); usuario=null; }
+  // listar usuários pode ser negado para não-admin (regras) — não é fatal
+  try{ USERS=await store.getUsers(); }catch(e){ console.info('getUsers ignorado (sem permissão de listar):',e?.message||e); USERS=[]; }
   if(usuario) startApp(); else renderLogin();
 }
 // fallback: se o módulo não rodou (ex.: file://), inicia em modo local
@@ -594,7 +597,7 @@ function startApp(){
   $('.shell').style.display='';
   renderSidebar(); render();
 }
-async function refreshSessao(){ USERS=await store.getUsers(); usuario=await auth.current(); }
+async function refreshSessao(){ try{ USERS=await store.getUsers(); }catch(e){ USERS=[]; } usuario=await auth.current(); }
 
 /* ---------- tela de login ---------- */
 function renderLogin(modo){
@@ -895,7 +898,8 @@ function acessoTexto(u){
 }
 async function renderAdmin(content){
   if(!cap().admin){ content.innerHTML=emptyHTML('Acesso restrito','Esta área é exclusiva de administradores.'); return; }
-  USERS=await store.getUsers();
+  try{ USERS=await store.getUsers(); }
+  catch(e){ content.innerHTML=emptyHTML('Não foi possível carregar os usuários','Confira as Regras de Segurança: a coleção "usuarios" precisa permitir listagem para admin. Detalhe no console (F12).'); return; }
   const total=USERS.length;
   const comAcesso=USERS.filter(u=>u.role==='admin'||(u.status==='ativo'&&planoVigente(u))).length;
   const suspensos=USERS.filter(u=>u.status==='suspenso').length;
