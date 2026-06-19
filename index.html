@@ -89,6 +89,18 @@
   .tag.exp{background:rgba(245,180,80,.16);color:#fbbf24}
   .tag.sus{background:rgba(255,90,90,.16);color:#ff9a9a}
   .tag.adm{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc-bright)}
+  .tag.life{background:rgba(56,189,248,.16);color:#7dd3fc}
+  /* corrige opções de dropdown ilegíveis (texto claro sobre fundo branco do SO) */
+  select option{background:#1b2230;color:#E9EEF2}
+  /* barra de ferramentas do admin */
+  .atools{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .asearch{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:11px;padding:0 14px;flex:1;min-width:200px}
+  .asearch input{background:none;border:none;outline:none;color:var(--txt);font-size:14px;padding:10px 0;width:100%}
+  .afilters{display:flex;gap:6px;flex-wrap:wrap}
+  .afilters button{font-size:12.5px;font-weight:600;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#9aa7b1}
+  .afilters button:hover{color:#fff}
+  .afilters button.on{background:var(--acc);color:var(--acc-on);border-color:transparent}
+  .field .seg2{display:flex;gap:8px;flex-wrap:wrap}
   .uacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .uacts button{font-size:12px;font-weight:600;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cdd6dd;transition:.15s}
   .uacts button:hover{background:rgba(255,255,255,.12);color:#fff}
@@ -414,6 +426,7 @@ class AuthProvider {
   async login(email, senha) {}        // -> usuario | lança erro
   async signup({nome,email,senha}) {} // -> usuario | lança erro
   async logout() {}
+  async resetPassword(email) {}       // envia redefinição (Firebase) ou avisa (local)
 }
 class LocalAuth extends AuthProvider {
   constructor(store){ super(); this.store=store; }
@@ -434,6 +447,12 @@ class LocalAuth extends AuthProvider {
     await this.store.setMeta('sessao',u.id); return u;
   }
   async logout(){ await this.store.setMeta('sessao',null); }
+  async resetPassword(email){
+    // modo local não tem e-mail; só confirma se a conta existe
+    const u=(await this.store.getUsers()).find(x=>(x.email||'').toLowerCase()===email.trim().toLowerCase());
+    if(!u) throw new Error('E-mail não encontrado.');
+    throw new Error('No modo local não há envio de e-mail. Com o Firebase, o link de redefinição é enviado de verdade.');
+  }
 }
 </script>
 
@@ -528,6 +547,7 @@ const SEED_USERS=[
 <script>
 let store, auth, CATS=[], view={tipo:'inicio'}, termo='';
 let usuario=null, USERS=[];
+let adminFiltro='todos', adminBusca='';
 
 async function boot(){
   if(window.__booted) return; window.__booted=true;
@@ -564,6 +584,7 @@ function traduzErroAuth(err){
     'auth/operation-not-allowed':'Ative o login por E-mail/senha no Firebase Authentication.',
     'auth/network-request-failed':'Falha de conexão. Verifique sua internet.',
     'auth/too-many-requests':'Muitas tentativas. Tente novamente em instantes.',
+    'auth/missing-email':'Informe um e-mail.',
   };
   return map[c] || (err&&err.message) || 'Algo deu errado. Tente novamente.';
 }
@@ -579,6 +600,31 @@ async function refreshSessao(){ USERS=await store.getUsers(); usuario=await auth
 function renderLogin(modo){
   modo=modo||'entrar';
   const g=$('#authgate'); $('.shell').style.display='none';
+  if(modo==='recuperar'){
+    g.innerHTML=`
+      <div class="authcard">
+        <div class="brand"><span class="sq">🔪</span>Mise</div>
+        <div class="sub">Informe seu e-mail para receber o link de redefinição de senha.</div>
+        <div class="autherr" id="autherr"></div>
+        <div class="field"><label>E-mail</label><input id="a_email" type="email" placeholder="email@exemplo.com"></div>
+        <button class="bacc" id="a_reset">Enviar link de redefinição</button>
+        <button class="logoutbtn" id="a_voltar" style="margin-top:12px">← Voltar para o login</button>
+      </div>`;
+    g.classList.add('on');
+    const erro=msg=>{const e=$('#autherr');e.classList.remove('ok');e.textContent=msg;e.classList.add('on');};
+    $('#a_voltar').onclick=()=>renderLogin('entrar');
+    $('#a_reset').onclick=async()=>{
+      $('#autherr').classList.remove('on');
+      try{
+        await auth.resetPassword($('#a_email').value);
+        const e=$('#autherr'); e.textContent='✅ Link enviado! Confira seu e-mail (e a caixa de spam).';
+        e.style.background='rgba(52,211,153,.12)'; e.style.borderColor='rgba(52,211,153,.35)'; e.style.color='#9ff0d0';
+        e.classList.add('on');
+      }catch(err){ erro(traduzErroAuth(err)); }
+    };
+    setTimeout(()=>$('#a_email')?.focus(),60);
+    return;
+  }
   g.innerHTML=`
     <div class="authcard">
       <div class="brand"><span class="sq">🔪</span>Mise</div>
@@ -591,6 +637,7 @@ function renderLogin(modo){
       ${modo==='criar'?`<div class="field"><label>Nome</label><input id="a_nome" placeholder="Seu nome"></div>`:''}
       <div class="field"><label>E-mail</label><input id="a_email" type="email" placeholder="email@exemplo.com" autocomplete="username"></div>
       <div class="field"><label>Senha</label><input id="a_senha" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      ${modo==='entrar'?`<div style="text-align:right;margin:-6px 0 10px"><a id="a_forgot" style="font-size:13px;color:var(--acc-bright);cursor:pointer">Esqueci minha senha</a></div>`:''}
       <button class="bacc" id="a_go">${modo==='entrar'?'Entrar':'Criar conta e entrar'}</button>
       ${(modo==='entrar' && !window.MODO_FIREBASE)?`
         <div class="demoaccts">
@@ -605,8 +652,9 @@ function renderLogin(modo){
     </div>`;
   g.classList.add('on');
   g.querySelectorAll('[data-modo]').forEach(b=>b.onclick=()=>renderLogin(b.dataset.modo));
-  g.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>fazerLogin(b.dataset.demo, b.dataset.demo==='maria@mise.app'?'admin123':'123456').catch(err=>erro(traduzErroAuth(err))));
   const erro=msg=>{const e=$('#autherr');e.textContent=msg;e.classList.add('on');};
+  g.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>fazerLogin(b.dataset.demo, b.dataset.demo==='maria@mise.app'?'admin123':'123456').catch(err=>erro(traduzErroAuth(err))));
+  const fg=$('#a_forgot'); if(fg) fg.onclick=()=>renderLogin('recuperar');
   $('#a_go').onclick=async()=>{
     $('#autherr').classList.remove('on');
     try{
@@ -625,7 +673,7 @@ async function fazerLogin(email,senha){
 }
 async function logout(){ await auth.logout(); usuario=null; view={tipo:'inicio'}; termo=''; renderLogin('entrar'); }
 
-const planoVigente=u=>!!(u&&u.planoAte&&u.planoAte>Date.now());
+const planoVigente=u=>!!(u && (u.vitalicio || (u.planoAte && u.planoAte>Date.now())));
 function cap(){
   const u=usuario||{};
   const admin=u.role==='admin';
@@ -667,6 +715,7 @@ async function renderSidebar(){
     : '<span class="rb exp">Expirado</span>';
   const sub = c.admin ? 'Administrador'
     : u.status==='suspenso' ? 'Acesso suspenso'
+    : u.vitalicio ? 'Acesso indeterminado'
     : c.planoVigente ? ('Plano até '+fmtData(u.planoAte))
     : 'Sem plano ativo';
 
@@ -838,13 +887,29 @@ async function render(){
 function emptyHTML(t,s){return `<div class="empty"><div class="ico">🍳</div><b>${t}</b>${s}</div>`;}
 
 /* ---------- painel de administração ---------- */
+function acessoTexto(u){
+  if(u.role==='admin') return 'Total (admin)';
+  if(u.vitalicio) return 'Indeterminado';
+  if(u.planoAte) return planoVigente(u)?`${diasRestantes(u.planoAte)} dia(s) · até ${fmtData(u.planoAte)}`:`Expirou em ${fmtData(u.planoAte)}`;
+  return 'Sem plano';
+}
 async function renderAdmin(content){
   if(!cap().admin){ content.innerHTML=emptyHTML('Acesso restrito','Esta área é exclusiva de administradores.'); return; }
   USERS=await store.getUsers();
   const total=USERS.length;
-  const ativos=USERS.filter(u=>u.role==='admin'||(u.status==='ativo'&&planoVigente(u))).length;
+  const comAcesso=USERS.filter(u=>u.role==='admin'||(u.status==='ativo'&&planoVigente(u))).length;
   const suspensos=USERS.filter(u=>u.status==='suspenso').length;
   const expirados=USERS.filter(u=>u.role!=='admin'&&u.status==='ativo'&&!planoVigente(u)).length;
+
+  // aplica filtro + busca
+  const q=adminBusca.trim().toLowerCase();
+  let lista=USERS.filter(u=>{
+    if(adminFiltro==='acesso' && !(u.role==='admin'||(u.status==='ativo'&&planoVigente(u)))) return false;
+    if(adminFiltro==='expirados' && !(u.role!=='admin'&&u.status==='ativo'&&!planoVigente(u))) return false;
+    if(adminFiltro==='suspensos' && u.status!=='suspenso') return false;
+    if(q && !((u.nome||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
 
   const linha=u=>{
     const ini=(u.nome||'?').trim()[0].toUpperCase();
@@ -852,27 +917,27 @@ async function renderAdmin(content){
     const vig=planoVigente(u);
     const statusTag = u.status==='suspenso' ? '<span class="tag sus">⛔ Suspenso</span>'
       : ehAdmin ? '<span class="tag adm">🛡️ Admin</span>'
+      : u.vitalicio ? '<span class="tag life">∞ Indeterminado</span>'
       : vig ? '<span class="tag ok">✓ Ativo</span>' : '<span class="tag exp">⏳ Expirado</span>';
-    const acesso = ehAdmin ? 'Total (admin)'
-      : u.planoAte ? (vig?`${diasRestantes(u.planoAte)} dia(s) · até ${fmtData(u.planoAte)}`:`Expirou em ${fmtData(u.planoAte)}`)
-      : 'Sem plano';
     const eu = usuario && u.id===usuario.id;
     return `<tr>
       <td><div class="uname"><div class="av">${esc(ini)}</div><div><b>${esc(u.nome)}${eu?' (você)':''}</b><span>${esc(u.email||'')}</span></div></div></td>
       <td>${statusTag}</td>
-      <td>${esc(acesso)}</td>
+      <td>${esc(acessoTexto(u))}</td>
       <td><div class="uacts">
         ${u.status==='suspenso'
           ? `<button data-act="reativar" data-id="${u.id}">Reativar</button>`
           : `<button data-act="suspender" data-id="${u.id}" ${ehAdmin?'disabled style="opacity:.4"':''}>Suspender</button>`}
-        <button data-act="acesso" data-id="${u.id}" ${ehAdmin?'disabled style="opacity:.4"':''}>Conceder acesso</button>
+        <button data-act="editar" data-id="${u.id}">Editar</button>
         <div class="menu">
           <button data-act="mais" data-id="${u.id}">⋯</button>
           <div class="pop" data-pop="${u.id}">
-            <button data-act="+7" data-id="${u.id}">+ 7 dias</button>
-            <button data-act="+30" data-id="${u.id}">+ 30 dias</button>
-            <button data-act="+90" data-id="${u.id}">+ 90 dias</button>
+            <button data-act="+7" data-id="${u.id}">+ 7 dias de acesso</button>
+            <button data-act="+30" data-id="${u.id}">+ 30 dias de acesso</button>
+            <button data-act="+90" data-id="${u.id}">+ 90 dias de acesso</button>
+            <button data-act="vitalicio" data-id="${u.id}">Acesso indeterminado ∞</button>
             <button data-act="remacesso" data-id="${u.id}">Remover acesso</button>
+            <button data-act="reset" data-id="${u.id}">Redefinir senha</button>
             <button data-act="role" data-id="${u.id}">${ehAdmin?'Tornar usuário':'Tornar admin'}</button>
             <button class="danger" data-act="excluir" data-id="${u.id}" ${eu?'disabled style="opacity:.4"':''}>Excluir usuário</button>
           </div>
@@ -881,29 +946,37 @@ async function renderAdmin(content){
     </tr>`;
   };
 
+  const fbtn=(k,l)=>`<button data-filtro="${k}" class="${adminFiltro===k?'on':''}">${l}</button>`;
   content.innerHTML=`
     <div class="adminhead">
       <button class="addbtn" id="btnNewUser">＋ Novo usuário</button>
       <div class="kpi">
         <div class="box"><b>${total}</b>usuários</div>
-        <div class="box"><b>${ativos}</b>com acesso</div>
+        <div class="box"><b>${comAcesso}</b>com acesso</div>
         <div class="box"><b>${expirados}</b>expirados</div>
         <div class="box"><b>${suspensos}</b>suspensos</div>
       </div>
     </div>
+    <div class="atools">
+      <div class="asearch">🔍 <input id="aSearch" placeholder="Buscar por nome ou e-mail…" value="${esc(adminBusca)}"></div>
+      <div class="afilters">
+        ${fbtn('todos','Todos')}${fbtn('acesso','Com acesso')}${fbtn('expirados','Expirados')}${fbtn('suspensos','Suspensos')}
+      </div>
+    </div>
     <table class="utable">
       <thead><tr><th>Usuário</th><th>Situação</th><th>Acesso</th><th style="text-align:right">Ações</th></tr></thead>
-      <tbody>${USERS.map(linha).join('')}</tbody>
+      <tbody>${lista.length?lista.map(linha).join(''):`<tr><td colspan="4" style="text-align:center;color:var(--mut2);border-radius:12px">Nenhum usuário encontrado.</td></tr>`}</tbody>
     </table>
     <p style="color:var(--mut2);font-size:12.5px;margin-top:16px;line-height:1.6">
-      🔒 Importante: no app publicado, estas permissões precisam ser garantidas pelas
-      <b>Regras de Segurança do Firestore</b> + <b>Firebase Auth</b> (custom claims de admin).
-      As verificações aqui no navegador são só para a interface — não substituem a segurança no servidor.
+      🔒 Lembrete: estas permissões precisam ser garantidas também pelas
+      <b>Regras de Segurança do Firestore</b>. As verificações no navegador são só para a
+      interface — publique as regras (bloco no fim do firestore-store.js) para valer no servidor.
     </p>`;
 
-  // ações
   content.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>acaoAdmin(b.dataset.act,b.dataset.id,b));
+  content.querySelectorAll('[data-filtro]').forEach(b=>b.onclick=()=>{adminFiltro=b.dataset.filtro;renderAdmin(content);});
   $('#btnNewUser').onclick=()=>openUserForm();
+  const as=$('#aSearch'); if(as){ let t; as.oninput=e=>{clearTimeout(t);t=setTimeout(()=>{adminBusca=e.target.value;renderAdmin(content);},180);}; as.focus(); as.setSelectionRange(as.value.length,as.value.length); }
 }
 
 async function acaoAdmin(act,id,btn){
@@ -913,17 +986,87 @@ async function acaoAdmin(act,id,btn){
     pop.classList.toggle('on'); return;
   }
   const u=await store.getUser(id); if(!u)return;
+  if(act==='editar'){ openUserEdit(u); return; }
+  if(act==='reset'){
+    if(!u.email){ toast('Usuário sem e-mail cadastrado'); return; }
+    try{ await auth.resetPassword(u.email); toast('Link de redefinição enviado para '+u.email); }
+    catch(e){ toast(traduzErroAuth(e)); }
+    return;
+  }
   const base=Math.max(Date.now(), u.planoAte||0);
   if(act==='suspender'){ u.status='suspenso'; await store.saveUser(u); toast('Usuário suspenso'); }
   else if(act==='reativar'){ u.status='ativo'; await store.saveUser(u); toast('Acesso reativado'); }
-  else if(act==='acesso'||act==='+30'){ u.status='ativo'; u.planoAte=base+30*86400000; await store.saveUser(u); toast('Acesso concedido (+30 dias)'); }
-  else if(act==='+7'){ u.status='ativo'; u.planoAte=base+7*86400000; await store.saveUser(u); toast('+7 dias de acesso'); }
-  else if(act==='+90'){ u.status='ativo'; u.planoAte=base+90*86400000; await store.saveUser(u); toast('+90 dias de acesso'); }
-  else if(act==='remacesso'){ u.planoAte=null; await store.saveUser(u); toast('Acesso removido'); }
+  else if(act==='+7'){ u.status='ativo'; u.vitalicio=false; u.planoAte=base+7*86400000; await store.saveUser(u); toast('+7 dias de acesso'); }
+  else if(act==='+30'){ u.status='ativo'; u.vitalicio=false; u.planoAte=base+30*86400000; await store.saveUser(u); toast('+30 dias de acesso'); }
+  else if(act==='+90'){ u.status='ativo'; u.vitalicio=false; u.planoAte=base+90*86400000; await store.saveUser(u); toast('+90 dias de acesso'); }
+  else if(act==='vitalicio'){ u.status='ativo'; u.vitalicio=true; u.planoAte=null; await store.saveUser(u); toast('Acesso indeterminado concedido ∞'); }
+  else if(act==='remacesso'){ u.vitalicio=false; u.planoAte=null; await store.saveUser(u); toast('Acesso removido'); }
   else if(act==='role'){ u.role=u.role==='admin'?'user':'admin'; await store.saveUser(u); toast(u.role==='admin'?'Promovido a admin':'Agora é usuário'); }
   else if(act==='excluir'){ if(!confirm(`Excluir o usuário ${u.nome}?`))return; await store.deleteUser(id); toast('Usuário excluído'); }
   await refreshSessao(); renderSidebar();
-  const c=$('#content'); renderAdmin(c);
+  renderAdmin($('#content'));
+}
+
+/* ---------- editar usuário (modal completo) ---------- */
+function openUserEdit(u){
+  const tipoAcesso = u.role==='admin' ? 'admin' : u.vitalicio ? 'indeterminado' : u.planoAte ? 'data' : 'sem';
+  const dataISO = u.planoAte ? new Date(u.planoAte).toISOString().slice(0,10) : '';
+  const m=el(`<div class="modal" role="dialog" aria-modal="true">
+    <div class="form-title">Editar usuário</div>
+    <div class="mscroll">
+      <div class="field"><label>Nome</label><input id="e_nome" value="${esc(u.nome||'')}"></div>
+      <div class="field"><label>E-mail</label><input id="e_email" value="${esc(u.email||'')}"></div>
+      <div class="frow">
+        <div class="field"><label>Papel</label><select id="e_role">
+          <option value="user" ${u.role!=='admin'?'selected':''}>Usuário</option>
+          <option value="admin" ${u.role==='admin'?'selected':''}>Administrador</option>
+        </select></div>
+        <div class="field"><label>Situação</label><select id="e_status">
+          <option value="ativo" ${u.status!=='suspenso'?'selected':''}>Ativo</option>
+          <option value="suspenso" ${u.status==='suspenso'?'selected':''}>Suspenso</option>
+        </select></div>
+        <div class="field"><label>Acesso</label><select id="e_acesso">
+          <option value="indeterminado" ${tipoAcesso==='indeterminado'?'selected':''}>Indeterminado ∞</option>
+          <option value="data" ${tipoAcesso==='data'?'selected':''}>Até uma data</option>
+          <option value="sem" ${tipoAcesso==='sem'?'selected':''}>Sem acesso</option>
+        </select></div>
+      </div>
+      <div class="field" id="e_datawrap" style="${tipoAcesso==='data'?'':'display:none'}">
+        <label>Válido até</label><input id="e_data" type="date" value="${dataISO}">
+      </div>
+      <div class="field"><label>Senha</label>
+        <button class="bsoft" id="e_reset" type="button">✉️ Enviar redefinição de senha por e-mail</button>
+        <div class="help" style="color:var(--mut2)">No Firebase, envia um link de redefinição para o e-mail do usuário.</div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="bsoft" data-close>Cancelar</button><span class="grow"></span><button class="bacc" data-save>Salvar alterações</button></div>
+  </div>`);
+  const acessoSel=m.querySelector('#e_acesso'), dataWrap=m.querySelector('#e_datawrap'), roleSel=m.querySelector('#e_role');
+  const sync=()=>{ dataWrap.style.display = acessoSel.value==='data' ? '' : 'none'; };
+  acessoSel.onchange=sync;
+  m.querySelector('#e_reset').onclick=async()=>{
+    const email=m.querySelector('#e_email').value.trim();
+    if(!email){ toast('Informe o e-mail primeiro'); return; }
+    try{ await auth.resetPassword(email); toast('Link de redefinição enviado'); }
+    catch(e){ toast(traduzErroAuth(e)); }
+  };
+  m.querySelector('[data-close]').onclick=closeOverlay;
+  m.querySelector('[data-save]').onclick=async()=>{
+    const nome=m.querySelector('#e_nome').value.trim();
+    if(!nome){const t=m.querySelector('#e_nome');t.focus();t.style.borderColor='#ff8a8a';return;}
+    u.nome=nome;
+    u.email=m.querySelector('#e_email').value.trim();
+    u.role=roleSel.value;
+    u.status=m.querySelector('#e_status').value;
+    const ta=acessoSel.value;
+    if(ta==='indeterminado'){ u.vitalicio=true; u.planoAte=null; }
+    else if(ta==='data'){ u.vitalicio=false; const d=m.querySelector('#e_data').value; u.planoAte=d?new Date(d+'T23:59:59').getTime():null; }
+    else { u.vitalicio=false; u.planoAte=null; }
+    await store.saveUser(u);
+    closeOverlay(); toast('Usuário atualizado');
+    await refreshSessao(); renderSidebar(); renderAdmin($('#content'));
+  };
+  showOverlay(m); setTimeout(()=>m.querySelector('#e_nome')?.focus(),60);
 }
 
 function openUserForm(){
@@ -935,9 +1078,15 @@ function openUserForm(){
       <div class="field"><label>Senha inicial</label><input id="u_senha" type="text" placeholder="mínimo 6 caracteres" value="123456"></div>
       <div class="frow">
         <div class="field"><label>Papel</label><select id="u_role"><option value="user">Usuário</option><option value="admin">Administrador</option></select></div>
-        <div class="field" style="grid-column:span 2"><label>Conceder acesso por</label><select id="u_dias"><option value="0">Sem acesso</option><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option></select></div>
+        <div class="field" style="grid-column:span 2"><label>Conceder acesso</label><select id="u_acesso">
+          <option value="0">Sem acesso</option>
+          <option value="7">7 dias</option>
+          <option value="30" selected>30 dias</option>
+          <option value="90">90 dias</option>
+          <option value="vit">Indeterminado ∞</option>
+        </select></div>
       </div>
-      <div class="help" style="color:var(--mut2)">No app real, o usuário também precisa de uma conta no Firebase Auth (e-mail/senha ou provedor). Aqui criamos o perfil já com uma senha de acesso.</div>
+      <div class="help" style="color:var(--mut2)">No app real (Firebase), o ideal é a pessoa se cadastrar pela tela inicial; aqui você cria/ajusta o perfil e o acesso.</div>
     </div>
     <div class="mfoot"><button class="bsoft" data-close>Cancelar</button><span class="grow"></span><button class="bacc" data-save>Criar usuário</button></div>
   </div>`);
@@ -945,9 +1094,11 @@ function openUserForm(){
   m.querySelector('[data-save]').onclick=async()=>{
     const nome=m.querySelector('#u_nome').value.trim();
     if(!nome){const t=m.querySelector('#u_nome');t.focus();t.style.borderColor='#ff8a8a';return;}
-    const dias=+m.querySelector('#u_dias').value;
-    await store.saveUser({nome, email:m.querySelector('#u_email').value.trim(), senha:m.querySelector('#u_senha').value.trim()||'123456', role:m.querySelector('#u_role').value,
-      status:'ativo', planoAte: dias?Date.now()+dias*86400000:null});
+    const ac=m.querySelector('#u_acesso').value;
+    const novo={nome, email:m.querySelector('#u_email').value.trim(), senha:m.querySelector('#u_senha').value.trim()||'123456',
+      role:m.querySelector('#u_role').value, status:'ativo', vitalicio: ac==='vit',
+      planoAte: (ac!=='0'&&ac!=='vit')?Date.now()+(+ac)*86400000:null};
+    await store.saveUser(novo);
     closeOverlay(); toast('Usuário criado'); USERS=await store.getUsers(); renderSidebar(); renderAdmin($('#content'));
   };
   showOverlay(m); setTimeout(()=>m.querySelector('#u_nome')?.focus(),60);

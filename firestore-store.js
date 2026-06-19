@@ -34,7 +34,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signOut, onAuthStateChanged
+  signOut, onAuthStateChanged, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // 🔧 Configuração do projeto Firebase (receitas-a9c08)
@@ -173,8 +173,10 @@ export class FirestoreStore /* implements RecipeStore */ {
        function acessoAtivo() {
          return request.auth != null && (
            meu().role == 'admin' ||
-           (meu().status == 'ativo' && meu().planoAte != null
-              && meu().planoAte > request.time.toMillis())
+           (meu().status == 'ativo' && (
+              meu().vitalicio == true ||
+              (meu().planoAte != null && meu().planoAte > request.time.toMillis())
+           ))
          );
        }
 
@@ -253,4 +255,5 @@ export class FirebaseAuthProvider {
     return p;
   }
   async logout(){ await signOut(this.auth); }
+  async resetPassword(email){ await sendPasswordResetEmail(this.auth, email.trim()); }
 }
