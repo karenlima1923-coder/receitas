@@ -15,6 +15,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Geração de PDF da receita (carregada sob demanda) -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- Carrega as implementações Firebase (dados + login) e inicia o app.
      Se não carregar (ex.: aberto por file://), o app cai no modo local automaticamente. -->
 <script type="module">
@@ -1962,6 +1964,8 @@ async function openRecipe(id){
         <button class="prim" data-cook>👨‍🍳 Modo cozinhar</button>
         <button data-addlist>🛒 Adicionar à lista</button>
         <button data-done>✓ Já fiz</button>
+        <button data-pdf>📄 Baixar PDF</button>
+        <button data-wpp>💬 WhatsApp</button>
         <button data-share>🔗 Compartilhar</button>
       </div>
       <div class="scaler">
@@ -2011,6 +2015,8 @@ async function openRecipe(id){
   m.querySelector('[data-cook]').onclick=()=>abrirModoCozinhar(r,fator);
   m.querySelector('[data-addlist]').onclick=()=>adicionarNaLista(r,fator);
   m.querySelector('[data-done]').onclick=()=>marcarFeito(r);
+  m.querySelector('[data-pdf]').onclick=()=>baixarPDFReceita(r,fator);
+  m.querySelector('[data-wpp]').onclick=()=>compartilharWhatsApp(r,fator);
   m.querySelector('[data-share]').onclick=()=>compartilhar(r);
 
   showOverlay(m);
@@ -2025,6 +2031,65 @@ async function compartilhar(r){
   const url=`${location.origin}${location.pathname}?receita=${encodeURIComponent(r.id)}`;
   try{ await navigator.clipboard.writeText(url); toast('Link copiado! 🔗'); }
   catch(e){ prompt('Copie o link da receita:', url); }
+}
+
+/* ---------- PDF da receita ---------- */
+function slugArquivo(s){
+  return (String(s||'receita').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40))||'receita';
+}
+// gera o documento PDF (respeita a porção ajustada "fator")
+function gerarPDFReceita(r, fator=1){
+  if(!(window.jspdf && window.jspdf.jsPDF)) throw new Error('jsPDF não carregou');
+  const { jsPDF } = window.jspdf;
+  const d=new jsPDF({unit:'pt',format:'a4'});
+  const W=d.internal.pageSize.getWidth(), H=d.internal.pageSize.getHeight();
+  const M=50, maxW=W-2*M; let y=62;
+  const cat=catBy(r.categoria);
+  function check(h){ if(y+h>H-M){ d.addPage(); y=62; } }
+  function write(text,{size=11,bold=false,color=[44,52,68],gap=6,lh=1.42}={}){
+    d.setFont('helvetica',bold?'bold':'normal'); d.setFontSize(size); d.setTextColor(color[0],color[1],color[2]);
+    const lines=d.splitTextToSize(String(text),maxW);
+    for(const ln of lines){ check(size*lh); d.text(ln,M,y); y+=size*lh; }
+    y+=gap;
+  }
+  write(r.titulo,{size:22,bold:true,color:[16,24,40],gap:4});
+  const porc=escalaPorcoes(r.porcoes||'',fator);
+  const meta=[cat.nome, r.tempoMin?`${r.tempoMin} min`:'', porc, r.dificuldade||''].filter(Boolean).join('   •   ');
+  write(meta,{size:10.5,color:[120,130,140],gap:2});
+  if(r.tags&&r.tags.length) write(r.tags.map(t=>tagBy(t).nome).join(', '),{size:10,color:[120,130,140]});
+  check(14); d.setDrawColor(222); d.line(M,y,W-M,y); y+=16;
+  write('Ingredientes',{size:14,bold:true,color:[16,24,40],gap:8});
+  (r.ingredientes||[]).forEach(linha=>{ const e=escalaIngrediente(linha,fator); write('•  '+((e.qtd||'')+e.resto),{size:11,gap:3,lh:1.35}); });
+  y+=8;
+  write('Modo de preparo',{size:14,bold:true,color:[16,24,40],gap:8});
+  (r.preparo||[]).forEach((p,i)=>write(`${i+1}.  ${p}`,{size:11,gap:5,lh:1.42}));
+  // rodapé
+  d.setFont('helvetica','normal'); d.setFontSize(9); d.setTextColor(165,172,180);
+  d.text('Feito com Mise', M, H-26);
+  return d;
+}
+function baixarPDFReceita(r, fator=1){
+  try{ gerarPDFReceita(r,fator).save(`${slugArquivo(r.titulo)}.pdf`); toast('PDF baixado 📄'); }
+  catch(e){ toast('Não consegui gerar o PDF agora — tente de novo em instantes'); }
+}
+async function compartilharWhatsApp(r, fator=1){
+  let d; try{ d=gerarPDFReceita(r,fator); }
+  catch(e){ toast('Não consegui gerar o PDF agora'); return; }
+  const nome=`${slugArquivo(r.titulo)}.pdf`;
+  try{
+    const blob=d.output('blob');
+    const file=new File([blob],nome,{type:'application/pdf'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:r.titulo, text:`Receita: ${r.titulo}`});
+      return;
+    }
+    // fallback (ex.: computador): baixa o PDF e abre o WhatsApp para anexar
+    d.save(nome);
+    const msg=encodeURIComponent(`Receita: ${r.titulo}\nSegue o PDF em anexo 🙂`);
+    window.open(`https://wa.me/?text=${msg}`,'_blank');
+    toast('PDF baixado — é só anexar no WhatsApp que abriu');
+  }catch(e){ if(e && e.name==='AbortError') return; toast('Não consegui compartilhar'); }
 }
 
 /* ---------- avaliações dentro do detalhe ---------- */
