@@ -165,6 +165,111 @@
   .logoutbtn{margin-top:8px;width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:11px;padding:10px;font-size:13px;font-weight:600;color:#cdd6dd;display:flex;align-items:center;justify-content:center;gap:7px}
   .logoutbtn:hover{background:rgba(255,90,90,.12);border-color:rgba(255,90,90,.35);color:#ffc2c2}
 
+  /* filtros e ordenação */
+  .filtros{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .filtros select{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:11px;color:var(--txt);font-size:13.5px;padding:9px 12px;outline:none}
+  .tagchips{display:flex;gap:6px;flex-wrap:wrap}
+  .tagchip{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#9aa7b1}
+  .tagchip:hover{color:#fff}
+  .tagchip.on{background:var(--acc);color:var(--acc-on);border-color:transparent}
+  .rtags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .rtag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06);color:#aab6bf}
+  .mtags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+  .mtag{font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--acc) 14%,transparent);color:var(--acc-bright)}
+
+  /* ações do detalhe */
+  .detacts{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 16px}
+  .detacts button{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:9px 13px;border-radius:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#cdd6dd}
+  .detacts button:hover{border-color:var(--acc);color:#fff}
+  .detacts button.prim{background:var(--acc);color:var(--acc-on);border-color:transparent}
+
+  /* avaliações */
+  .reviews{border-top:1px solid var(--line);margin-top:20px;padding-top:16px}
+  .reviews h5{font-family:'Sora';font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--acc-bright);margin-bottom:12px}
+  .stars{display:inline-flex;gap:2px;font-size:16px}
+  .stars .s{color:#3a4250}.stars.edit .s{cursor:pointer}
+  .stars .s.on{color:#fbbf24}
+  .ravg{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .ravg .big{font-family:'Sora';font-size:30px;font-weight:800}
+  .ravg span{color:var(--mut);font-size:13px}
+  .ritem{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .ritem .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .ritem .top b{font-size:13.5px}.ritem .top .when{margin-left:auto;font-size:11.5px;color:var(--mut2)}
+  .ritem p{font-size:13.5px;color:#cdd6dd;line-height:1.45}
+  .rform{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:13px;padding:14px;margin-bottom:16px}
+  .rform .stars{font-size:26px;margin-bottom:10px}
+  .rform textarea{width:100%;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:14px;padding:10px;min-height:60px;outline:none;resize:vertical;margin-bottom:10px}
+
+  /* modo cozinhar */
+  .cook{position:fixed;inset:0;z-index:250;background:var(--bg);display:none;flex-direction:column}
+  .cook.on{display:flex}
+  .cook .top{display:flex;align-items:center;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line)}
+  .cook .top b{font-family:'Sora';font-size:18px}
+  .cook .top .x{margin-left:auto;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.06);display:grid;place-items:center;font-size:18px}
+  .cook .prog{height:4px;background:rgba(255,255,255,.08)}
+  .cook .prog i{display:block;height:100%;background:var(--acc);transition:.3s}
+  .cook .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;overflow:auto}
+  .cook .step-n{font-family:'Inter';color:var(--acc-bright);font-size:13px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+  .cook .step-t{font-size:clamp(20px,3.2vw,32px);line-height:1.35;max-width:740px;font-weight:600}
+  .cook .timer{margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .cook .clock{font-family:'Sora';font-size:52px;font-weight:800;font-variant-numeric:tabular-nums}
+  .cook .trow{display:flex;gap:10px}
+  .cook .trow button{padding:11px 20px;border-radius:12px;font-weight:700;font-size:14px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cdd6dd}
+  .cook .trow button.go{background:var(--acc);color:var(--acc-on);border-color:transparent}
+  .cook .nav{display:flex;gap:12px;padding:18px 22px;border-top:1px solid var(--line)}
+  .cook .nav button{flex:1;padding:14px;border-radius:13px;font-weight:700;font-size:15px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#fff}
+  .cook .nav button.go{background:var(--acc);color:var(--acc-on);border-color:transparent}
+  .cook .nav button:disabled{opacity:.4}
+
+  /* lista de compras */
+  .lc{display:flex;flex-direction:column;gap:8px;max-width:680px}
+  .lc .li{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .lc .li.done .txt{text-decoration:line-through;color:var(--mut2)}
+  .lc .li input{width:18px;height:18px;accent-color:var(--acc);flex:0 0 auto}
+  .lc .li .txt{flex:1;font-size:14.5px}
+  .lc .li .src{font-size:11.5px;color:var(--mut2);display:block;margin-top:2px}
+  .lc .li .rm{color:#ff9a9a;font-size:16px;background:none}
+  .lcbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+
+  /* cardápio semanal */
+  .planner{display:grid;grid-template-columns:240px 1fr;gap:18px;align-items:start}
+  .recpool{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:14px;position:sticky;top:20px}
+  .recpool .ph{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut2);font-weight:700;margin-bottom:10px}
+  .recpool input{width:100%;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font-size:13px;padding:8px 10px;outline:none;margin-bottom:10px}
+  .recpool .pool{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
+  .rchip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;cursor:grab;user-select:none}
+  .rchip:active{cursor:grabbing}
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+  .day{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:150px;display:flex;flex-direction:column;gap:8px}
+  .day.over{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
+  .day .dh{font-size:12px;font-weight:700;color:var(--acc-bright);text-align:center;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  .day .it{background:rgba(255,255,255,.06);border-radius:9px;padding:7px 8px;font-size:12px;display:flex;align-items:center;gap:6px;cursor:grab}
+  .day .it .rm{margin-left:auto;color:#ff9a9a;cursor:pointer}
+  .day .empty2{font-size:11.5px;color:var(--mut2);text-align:center;margin:auto 0}
+
+  /* histórico */
+  .hist{display:flex;flex-direction:column;gap:8px;max-width:680px}
+  .hi{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+  .hi .em{font-size:22px}.hi b{font-size:14.5px}.hi .when{margin-left:auto;font-size:12px;color:var(--mut2)}
+
+  /* gráficos do admin */
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:6px 0 18px}
+  .chart{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+  .chart h4{font-family:'Sora';font-size:14px;margin-bottom:14px}
+  .bars{display:flex;align-items:flex-end;gap:8px;height:130px}
+  .bars .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+  .bars .b .bar{width:100%;max-width:34px;background:linear-gradient(180deg,var(--acc),var(--acc2));border-radius:6px 6px 0 0;min-height:3px}
+  .bars .b small{font-size:10px;color:var(--mut2)}
+  .bars .b .v{font-size:11px;font-weight:700}
+  .htop{display:flex;flex-direction:column;gap:9px}
+  .htop .r{display:flex;align-items:center;gap:10px;font-size:13px}
+  .htop .r .n{width:18px;color:var(--mut2);font-weight:700}
+  .htop .r .nm{flex:0 0 38%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .htop .r .track{flex:1;height:8px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden}
+  .htop .r .track i{display:block;height:100%;background:var(--acc)}
+  .htop .r .vv{font-size:12px;color:var(--mut);font-weight:600}
+  @media(max-width:900px){ .planner{grid-template-columns:1fr}.recpool{position:static}.week{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr} }
+
   /* ===== main ===== */
   main{flex:1;padding:26px 32px 60px;min-width:0}
   .topbar{display:flex;align-items:center;gap:16px;margin-bottom:26px;flex-wrap:wrap}
@@ -339,11 +444,18 @@ class RecipeStore {
   async deleteUser(id) {}
   async getMeta(k) {}                       // valor de configuração (ex.: sessão)
   async setMeta(k, v) {}
+  // --- engajamento ---
+  async getReviews(receitaId) {}            // -> [avaliacao]
+  async getAllReviews() {}                  // -> [avaliacao] (para médias)
+  async addOrUpdateReview(av) {}            // 1 por usuário por receita
+  async incView(id) {}                      // +1 visualização na receita
+  async getUserData(uid) {}                 // -> {lista, cardapio, historico}
+  async saveUserData(uid, data) {}
 }
 
 /* ---- Implementação IndexedDB (em uso hoje) ---- */
 class IndexedDBStore extends RecipeStore {
-  constructor(){ super(); this.db=null; this.NAME='mise_receitas'; this.VER=2; }
+  constructor(){ super(); this.db=null; this.NAME='mise_receitas'; this.VER=3; }
   init(){
     return new Promise((res,rej)=>{
       const req=indexedDB.open(this.NAME,this.VER);
@@ -356,6 +468,8 @@ class IndexedDBStore extends RecipeStore {
         }
         if(!db.objectStoreNames.contains('usuarios')) db.createObjectStore('usuarios',{keyPath:'id'});
         if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
+        if(!db.objectStoreNames.contains('avaliacoes')) db.createObjectStore('avaliacoes',{keyPath:'id'});
+        if(!db.objectStoreNames.contains('userdata')) db.createObjectStore('userdata',{keyPath:'uid'});
       };
       req.onsuccess=e=>{this.db=e.target.result;res();};
       req.onerror=e=>rej(e.target.error);
@@ -403,11 +517,22 @@ class IndexedDBStore extends RecipeStore {
   async deleteUser(id){ return this._del('usuarios',id); }
   async getMeta(k){ const r=await this._get('meta',k); return r?r.v:null; }
   async setMeta(k,v){ return this._put('meta',{k,v}); }
+  async getReviews(receitaId){ return (await this._all('avaliacoes')).filter(a=>a.receitaId===receitaId).sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0)); }
+  async getAllReviews(){ return this._all('avaliacoes'); }
+  async addOrUpdateReview(av){
+    const todas=await this._all('avaliacoes');
+    const ex=todas.find(a=>a.receitaId===av.receitaId && a.autorId===av.autorId);
+    if(ex){ av.id=ex.id; av.criadoEm=ex.criadoEm; } else { av.id='av'+Date.now()+Math.random().toString(16).slice(2); av.criadoEm=Date.now(); }
+    return this._put('avaliacoes',av);
+  }
+  async incView(id){ const r=await this.getRecipe(id); if(!r)return; r.views=(r.views||0)+1; await this._put('receitas',r); }
+  async getUserData(uid){ const d=await this._get('userdata',uid); return d?d.data:{}; }
+  async saveUserData(uid,data){ return this._put('userdata',{uid,data}); }
 }
 
 /* ---- Fallback em memória (se o navegador bloquear IndexedDB, ex: preview) ---- */
 class MemoryStore extends RecipeStore {
-  constructor(){ super(); this.cats=[]; this.recs=[]; this.users=[]; this.meta={}; }
+  constructor(){ super(); this.cats=[]; this.recs=[]; this.users=[]; this.meta={}; this.reviews=[]; this.udata={}; }
   async init(){}
   async seedIfEmpty(cats,recipes,users){
     if(!this.recs.length){ this.cats=[...cats]; this.recs=recipes.map(r=>({...r})); }
@@ -440,6 +565,13 @@ class MemoryStore extends RecipeStore {
   async deleteUser(id){ this.users=this.users.filter(u=>u.id!==id); }
   async getMeta(k){ return k in this.meta?this.meta[k]:null; }
   async setMeta(k,v){ this.meta[k]=v; }
+  async getReviews(rid){ return (this.reviews||[]).filter(a=>a.receitaId===rid).sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0)); }
+  async getAllReviews(){ return [...(this.reviews||[])]; }
+  async addOrUpdateReview(av){ this.reviews=this.reviews||[]; const ex=this.reviews.find(a=>a.receitaId===av.receitaId&&a.autorId===av.autorId);
+    if(ex){ Object.assign(ex,av); return ex; } av.id='av'+Date.now()+Math.random().toString(16).slice(2); av.criadoEm=Date.now(); this.reviews.push(av); return av; }
+  async incView(id){ const r=await this.getRecipe(id); if(r) r.views=(r.views||0)+1; }
+  async getUserData(uid){ return (this.udata&&this.udata[uid])||{}; }
+  async saveUserData(uid,data){ this.udata=this.udata||{}; this.udata[uid]=data; }
 }
 
 /* =====================================================================
@@ -515,7 +647,7 @@ const SEED_RECIPES=[
     ingredientes:['600g de filé de frango em cubos','1 cebola','2 col. de extrato de tomate','1 caixa de creme de leite','200g de champignon','Mostarda e ketchup'],
     preparo:['Doure o frango temperado com a cebola.','Junte o extrato, a mostarda e o ketchup.','Adicione o champignon e cozinhe alguns minutos.','Desligue, misture o creme de leite e sirva com arroz e batata palha.']}),
 
-  R({id:'d1',categoria:'doces',titulo:'Brigadeiro gourmet',emoji:'🍫',tempoMin:20,porcoes:'25 un',dificuldade:'Fácil',rating:5.0,
+  R({id:'d1',categoria:'doces',titulo:'Brigadeiro gourmet',emoji:'🍫',tempoMin:20,porcoes:'25 un',dificuldade:'Fácil',rating:5.0,tags:['vegetariano'],
     ingredientes:['1 lata de leite condensado','3 col. de cacau em pó','1 col. de manteiga','Chocolate granulado para enrolar'],
     preparo:['Cozinhe o leite condensado, o cacau e a manteiga em fogo médio.','Mexa sem parar até desgrudar do fundo da panela.','Despeje em um prato untado e deixe esfriar.','Enrole as bolinhas e passe no granulado.']}),
   R({id:'d2',categoria:'doces',titulo:'Bolo de cenoura com cobertura',emoji:'🥕',tempoMin:55,porcoes:'10 fatias',dificuldade:'Fácil',rating:4.8,
@@ -531,24 +663,24 @@ const SEED_RECIPES=[
     ingredientes:['1,5 xíc. de farinha','1 col. de cacau','1 xíc. de açúcar','1 ovo','120ml de buttermilk','Corante vermelho','Cream cheese para a cobertura'],
     preparo:['Misture os secos e os úmidos separadamente, depois junte.','Adicione o corante até a cor desejada.','Asse a 180°C por ~18 min.','Cubra com chantilly de cream cheese.']}),
 
-  R({id:'b1',categoria:'bebidas',titulo:'Suco verde detox',emoji:'🥤',tempoMin:5,porcoes:'2 copos',dificuldade:'Fácil',rating:4.5,
+  R({id:'b1',categoria:'bebidas',titulo:'Suco verde detox',emoji:'🥤',tempoMin:5,porcoes:'2 copos',dificuldade:'Fácil',rating:4.5,tags:['vegano','fit','sem-lactose'],
     ingredientes:['1 folha de couve','1 maçã verde','Suco de 1 limão','1 pedaço de gengibre','300ml de água de coco'],
     preparo:['Bata tudo no liquidificador.','Coe se preferir.','Sirva gelado na hora.']}),
   R({id:'b2',categoria:'bebidas',titulo:'Café gelado cremoso',emoji:'☕',tempoMin:10,porcoes:'2 copos',dificuldade:'Fácil',rating:4.7,
     ingredientes:['200ml de café forte gelado','2 col. de leite condensado','200ml de leite','Gelo a gosto'],
     preparo:['Bata o café com o leite condensado até espumar.','Encha os copos com gelo e leite.','Despeje o creme de café por cima.']}),
-  R({id:'b3',categoria:'bebidas',titulo:'Limonada suíça',emoji:'🍋',tempoMin:8,porcoes:'4 copos',dificuldade:'Fácil',rating:4.6,
+  R({id:'b3',categoria:'bebidas',titulo:'Limonada suíça',emoji:'🍋',tempoMin:8,porcoes:'4 copos',dificuldade:'Fácil',rating:4.6,tags:['vegano','sem-lactose'],
     ingredientes:['2 limões com casca','1L de água gelada','4 col. de açúcar','2 col. de leite condensado','Gelo'],
     preparo:['Corte os limões em pedaços e bata rapidamente com a água e o açúcar.','Coe bem.','Adicione o leite condensado e bata de novo.','Sirva com bastante gelo.']}),
 
-  R({id:'sa1',categoria:'saudaveis',titulo:'Bowl de quinoa e legumes',emoji:'🥗',tempoMin:20,porcoes:'2 porções',dificuldade:'Fácil',rating:4.6,
+  R({id:'sa1',categoria:'saudaveis',titulo:'Bowl de quinoa e legumes',emoji:'🥗',tempoMin:20,porcoes:'2 porções',dificuldade:'Fácil',rating:4.6,tags:['vegano','fit','sem-gluten'],
     ingredientes:['1 xíc. de quinoa cozida','1 abobrinha em cubos','1 cenoura','Grão-de-bico','Azeite, limão e sal'],
     preparo:['Grelhe os legumes no azeite.','Monte o bowl com a quinoa na base.','Distribua os legumes e o grão-de-bico.','Finalize com azeite e limão.']}),
-  R({id:'sa2',categoria:'saudaveis',titulo:'Panqueca de banana',emoji:'🥞',tempoMin:15,porcoes:'4 un',dificuldade:'Fácil',rating:4.7,
+  R({id:'sa2',categoria:'saudaveis',titulo:'Panqueca de banana',emoji:'🥞',tempoMin:15,porcoes:'4 un',dificuldade:'Fácil',rating:4.7,tags:['vegetariano','fit','sem-gluten'],
     ingredientes:['2 bananas maduras','2 ovos','3 col. de aveia','Canela a gosto'],
     preparo:['Amasse as bananas e misture com os ovos e a aveia.','Aqueça uma frigideira antiaderente.','Doure dos dois lados.','Sirva com canela e mel.']}),
 
-  R({id:'m1',categoria:'massas',titulo:'Macarrão alho e óleo',emoji:'🍝',tempoMin:20,porcoes:'3 porções',dificuldade:'Fácil',rating:4.5,
+  R({id:'m1',categoria:'massas',titulo:'Macarrão alho e óleo',emoji:'🍝',tempoMin:20,porcoes:'3 porções',dificuldade:'Fácil',rating:4.5,tags:['vegano'],
     ingredientes:['400g de espaguete','6 dentes de alho fatiados','Azeite','Pimenta calabresa','Salsinha'],
     preparo:['Cozinhe a massa al dente.','Doure o alho no azeite com a pimenta.','Junte a massa com um pouco da água do cozimento.','Finalize com salsinha.']}),
   R({id:'m2',categoria:'massas',titulo:'Lasanha à bolonhesa',emoji:'🍜',tempoMin:60,porcoes:'8 porções',dificuldade:'Médio',rating:4.8,
@@ -580,6 +712,58 @@ let adminFiltro='todos', adminBusca='';
 let selModo=false; const selSet=new Set();      // seleção múltipla de receitas
 const selUserSet=new Set();                     // seleção múltipla de usuários
 
+/* engajamento / dados extras */
+const TAGS=[
+  {slug:'vegano',nome:'Vegano',emoji:'🌱'},
+  {slug:'vegetariano',nome:'Vegetariano',emoji:'🥬'},
+  {slug:'sem-gluten',nome:'Sem glúten',emoji:'🌾'},
+  {slug:'sem-lactose',nome:'Sem lactose',emoji:'🥛'},
+  {slug:'low-carb',nome:'Low carb',emoji:'🥑'},
+  {slug:'fit',nome:'Fit',emoji:'💪'},
+];
+const tagBy=s=>TAGS.find(t=>t.slug===s)||{nome:s,emoji:'🏷️'};
+let reviewStats={};                              // {receitaId:{media,n}}
+let userData={lista:[],cardapio:{},historico:[]};// dados do usuário logado
+let fOrdenar='recentes', fDif='', fTags=new Set(); // filtros das listas
+const DIAS=[['seg','Segunda'],['ter','Terça'],['qua','Quarta'],['qui','Quinta'],['sex','Sexta'],['sab','Sábado'],['dom','Domingo']];
+
+function aggregaReviews(arr){
+  const m={};
+  for(const a of arr){ (m[a.receitaId]=m[a.receitaId]||[]).push(+a.nota||0); }
+  const out={}; for(const k in m){ const v=m[k]; out[k]={n:v.length, media:Math.round(v.reduce((s,x)=>s+x,0)/v.length*10)/10}; }
+  return out;
+}
+function mediaReceita(r){ const s=reviewStats[r.id]; return s? s.media : (r.rating ?? null); }
+function nReviews(r){ return reviewStats[r.id]?.n || 0; }
+async function recarregaReviews(){ try{ reviewStats=aggregaReviews(await store.getAllReviews()); }catch(e){ reviewStats={}; } }
+
+// detecta duração no texto do passo: "asse por 40 min", "1h", "30 segundos"
+function duracaoPasso(txt){
+  const m=String(txt).match(/(\d+(?:[.,]\d+)?)\s*(h|hora|horas|min|minuto|minutos|seg|segundo|segundos)/i);
+  if(!m) return 0;
+  const n=parseFloat(m[1].replace(',','.')); const u=m[2].toLowerCase();
+  if(u[0]==='h') return Math.round(n*3600);
+  if(u.startsWith('seg')) return Math.round(n);
+  return Math.round(n*60);
+}
+function fmtTimer(s){ const m=Math.floor(s/60), x=s%60; return `${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`; }
+
+function aplicaFiltros(list){
+  let l=[...list];
+  if(fDif) l=l.filter(r=>(r.dificuldade||'')===fDif);
+  if(fTags.size) l=l.filter(r=>{ const t=r.tags||[]; for(const tg of fTags) if(!t.includes(tg)) return false; return true; });
+  const ord={
+    recentes:(a,b)=>(b.criadoEm||0)-(a.criadoEm||0),
+    avaliadas:(a,b)=>(mediaReceita(b)||0)-(mediaReceita(a)||0),
+    rapidas:(a,b)=>(a.tempoMin||0)-(b.tempoMin||0),
+    longas:(a,b)=>(b.tempoMin||0)-(a.tempoMin||0),
+    az:(a,b)=>(a.titulo||'').localeCompare(b.titulo||''),
+  }[fOrdenar];
+  if(ord) l.sort(ord);
+  return l;
+}
+async function salvaUserData(){ if(usuario){ try{ await store.saveUserData(usuario.id, userData); }catch(e){ console.warn('saveUserData',e); } } }
+
 async function boot(){
   if(window.__booted) return; window.__booted=true;
   const firebase = !!(window.FirestoreStore && window.FirebaseAuthProvider);
@@ -601,6 +785,7 @@ async function boot(){
   try{ usuario=await auth.current(); }catch(e){ console.warn('current() falhou:',e); usuario=null; }
   // listar usuários pode ser negado para não-admin (regras) — não é fatal
   try{ USERS=await store.getUsers(); }catch(e){ console.info('getUsers ignorado (sem permissão de listar):',e?.message||e); USERS=[]; }
+  await recarregaReviews();
   if(usuario) startApp(); else renderLogin();
 }
 // fallback: se o módulo não rodou (ex.: file://), inicia em modo local
@@ -623,10 +808,15 @@ function traduzErroAuth(err){
   return map[c] || (err&&err.message) || 'Algo deu errado. Tente novamente.';
 }
 
-function startApp(){
+async function startApp(){
   $('#authgate').classList.remove('on');
   $('.shell').style.display='';
+  try{ const d=await store.getUserData(usuario.id); userData={lista:d.lista||[],cardapio:d.cardapio||{},historico:d.historico||[]}; }
+  catch(e){ userData={lista:[],cardapio:{},historico:[]}; }
   renderSidebar(); render();
+  // abre receita compartilhada por link ?receita=ID
+  const rid=new URLSearchParams(location.search).get('receita');
+  if(rid){ openRecipe(rid); history.replaceState(null,'',location.pathname); }
 }
 async function refreshSessao(){ try{ USERS=await store.getUsers(); }catch(e){ USERS=[]; } usuario=await auth.current(); }
 
@@ -763,6 +953,10 @@ async function renderSidebar(){
     ${navItem('populares',null,'🔥','Populares')}
     ${navItem('salvas',null,'🔖','Salvas',favs)}
     ${c.admin?navItem('admin',null,'🛡️','Administração'):''}
+    <div class="navlbl">Minha cozinha</div>
+    ${navItem('lista',null,'🛒','Lista de compras',(userData.lista||[]).length||null)}
+    ${navItem('cardapio',null,'📅','Cardápio')}
+    ${navItem('historico',null,'🍽️','Histórico',(userData.historico||[]).length||null)}
     <div class="navlbl">Categorias</div>
     ${CATS.map(cc=>navItem('categoria',cc.slug,cc.emoji,cc.nome,counts[cc.slug])).join('')}
     <div class="profile">
@@ -830,7 +1024,8 @@ function cardHTML(r, selMode, sel){
       ${canto}
     </div>
     <div class="body"><h4>${esc(r.titulo)}</h4>
-      <div class="meta"><span class="pchip">⏱️ ${r.tempoMin} min</span><span class="pchip">🍽️ ${esc(r.porcoes||'')}</span><span class="pchip">⭐ ${r.rating??'–'}</span></div>
+      <div class="meta"><span class="pchip">⏱️ ${r.tempoMin} min</span><span class="pchip">🍽️ ${esc(r.porcoes||'')}</span><span class="pchip">⭐ ${mediaReceita(r)??'–'}${nReviews(r)?` (${nReviews(r)})`:''}</span></div>
+      ${(r.tags&&r.tags.length)?`<div class="rtags">${r.tags.slice(0,3).map(t=>`<span class="rtag">${tagBy(t).emoji} ${tagBy(t).nome}</span>`).join('')}</div>`:''}
     </div></article>`;
 }
 function bindCards(scope){
@@ -913,9 +1108,15 @@ async function render(){
   else if(view.tipo==='populares') title.innerHTML='Populares <span>as mais bem avaliadas</span>';
   else if(view.tipo==='salvas') title.innerHTML='Salvas <span>suas favoritas</span>';
   else if(view.tipo==='admin') title.innerHTML='Administração <span>usuários e acessos</span>';
+  else if(view.tipo==='lista') title.innerHTML='Lista de compras <span>do que você precisa</span>';
+  else if(view.tipo==='cardapio') title.innerHTML='Cardápio da semana <span>arraste receitas para os dias</span>';
+  else if(view.tipo==='historico') title.innerHTML='Histórico <span>o que você já fez</span>';
   else title.innerHTML=`${catBy(view.slug).nome} <span>receitas da categoria</span>`;
 
   if(view.tipo==='admin'){ return renderAdmin(content); }
+  if(view.tipo==='lista'){ return renderLista(content); }
+  if(view.tipo==='cardapio'){ return renderCardapio(content); }
+  if(view.tipo==='historico'){ return renderHistorico(content); }
 
   const banner=bannerHTML();
 
@@ -962,7 +1163,9 @@ async function render(){
   let list;
   if(view.tipo==='categoria') list=await store.getRecipes({categoria:view.slug});
   else if(view.tipo==='salvas') list=await store.getRecipes({favoritas:true});
-  else list=(await store.getRecipes()).sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else list=await store.getRecipes();
+  if(view.tipo==='populares' && fOrdenar==='recentes') list.sort((a,b)=>(mediaReceita(b)||0)-(mediaReceita(a)||0));
+  const listaFiltrada=aplicaFiltros(list);
 
   if(!list.length){
     content.innerHTML = banner + (view.tipo==='salvas'
@@ -970,8 +1173,121 @@ async function render(){
       : emptyHTML('Categoria vazia','Adicione a primeira receita com o botão “Nova receita”.'));
     return;
   }
-  content.innerHTML=banner+selToolbarHTML()+gradeHTML(list);
-  ligaGrade(content);
+  content.innerHTML=banner+filtrosHTML()+selToolbarHTML()
+    +(listaFiltrada.length?gradeHTML(listaFiltrada):emptyHTML('Nada com esses filtros','Ajuste a ordenação, dificuldade ou tags acima.'));
+  ligaFiltros(content); ligaGrade(content);
+}
+
+/* ---------- barra de filtros/ordenação ---------- */
+function filtrosHTML(){
+  const ord=[['recentes','Mais recentes'],['avaliadas','Melhor avaliadas'],['rapidas','Mais rápidas'],['longas','Mais demoradas'],['az','A–Z']];
+  return `<div class="filtros">
+    <select id="fOrd">${ord.map(([v,l])=>`<option value="${v}" ${fOrdenar===v?'selected':''}>${l}</option>`).join('')}</select>
+    <select id="fDif"><option value="">Toda dificuldade</option>${['Fácil','Médio','Difícil'].map(d=>`<option ${fDif===d?'selected':''}>${d}</option>`).join('')}</select>
+    <div class="tagchips">${TAGS.map(t=>`<button data-tag="${t.slug}" class="tagchip ${fTags.has(t.slug)?'on':''}">${t.emoji} ${t.nome}</button>`).join('')}</div>
+  </div>`;
+}
+function ligaFiltros(content){
+  const o=content.querySelector('#fOrd'); if(o)o.onchange=()=>{fOrdenar=o.value;render();};
+  const d=content.querySelector('#fDif'); if(d)d.onchange=()=>{fDif=d.value;render();};
+  content.querySelectorAll('[data-tag]').forEach(b=>b.onclick=()=>{ const s=b.dataset.tag; fTags.has(s)?fTags.delete(s):fTags.add(s); render(); });
+}
+
+/* ---------- lista de compras ---------- */
+async function adicionarNaLista(r,fator){
+  const itens=(r.ingredientes||[]).map(l=>{ const e=escalaIngrediente(l,fator); return {texto:(e.qtd+e.resto).trim(), receitaId:r.id, receitaTitulo:r.titulo, marcado:false}; });
+  userData.lista=[...(userData.lista||[]), ...itens];
+  await salvaUserData(); renderSidebar();
+  toast(`${itens.length} item(ns) adicionado(s) à lista 🛒`);
+}
+async function renderLista(content){
+  const itens=userData.lista||[];
+  if(!itens.length){ content.innerHTML=emptyHTML('Sua lista está vazia','Abra uma receita e toque em “Adicionar à lista de compras”. Os itens entram já na quantidade da porção escolhida.'); return; }
+  content.innerHTML=`<div class="lcbar">
+      <button class="bsoft" id="lcCopy">📋 Copiar lista</button>
+      <button class="bsoft" id="lcDone">✓ Limpar marcados</button>
+      <button class="bsoft" id="lcClear" style="color:#ff9a9a">🗑 Limpar tudo</button>
+    </div>
+    <div class="lc">${itens.map((it,i)=>`
+      <label class="li ${it.marcado?'done':''}">
+        <input type="checkbox" data-i="${i}" ${it.marcado?'checked':''}>
+        <span class="txt">${esc(it.texto)}<span class="src">de ${esc(it.receitaTitulo||'')}</span></span>
+        <button class="rm" data-rm="${i}" title="Remover">✕</button>
+      </label>`).join('')}</div>`;
+  content.querySelectorAll('[data-i]').forEach(c=>c.onchange=async()=>{ itens[+c.dataset.i].marcado=c.checked; await salvaUserData(); renderLista(content); });
+  content.querySelectorAll('[data-rm]').forEach(b=>b.onclick=async e=>{ e.preventDefault(); itens.splice(+b.dataset.rm,1); userData.lista=itens; await salvaUserData(); renderSidebar(); renderLista(content); });
+  $('#lcCopy').onclick=()=>{ navigator.clipboard?.writeText(itens.map(i=>'• '+i.texto).join('\n')); toast('Lista copiada 📋'); };
+  $('#lcDone').onclick=async()=>{ userData.lista=itens.filter(i=>!i.marcado); await salvaUserData(); renderSidebar(); renderLista(content); };
+  $('#lcClear').onclick=async()=>{ if(!confirm('Limpar toda a lista?'))return; userData.lista=[]; await salvaUserData(); renderSidebar(); renderLista(content); };
+}
+
+/* ---------- marcar "já fiz" + histórico ---------- */
+async function marcarFeito(r){
+  userData.historico=[{receitaId:r.id,titulo:r.titulo,emoji:r.emoji||catBy(r.categoria).emoji,data:Date.now()}, ...(userData.historico||[])];
+  await salvaUserData(); renderSidebar(); toast('Anotado no histórico! 🍽️');
+}
+async function renderHistorico(content){
+  const h=userData.historico||[];
+  if(!h.length){ content.innerHTML=emptyHTML('Nada no histórico ainda','Quando terminar uma receita, toque em “Já fiz” para registrar aqui.'); return; }
+  const cont={}; h.forEach(e=>cont[e.receitaId]=(cont[e.receitaId]||0)+1);
+  content.innerHTML=`<div class="lcbar"><button class="bsoft" id="hClear" style="color:#ff9a9a">🗑 Limpar histórico</button></div>
+    <div class="hist">${h.map((e,i)=>`
+      <div class="hi"><span class="em">${e.emoji||'🍽️'}</span>
+        <div><b>${esc(e.titulo)}</b> ${cont[e.receitaId]>1?`<span style="color:var(--mut2);font-size:12px">· ${cont[e.receitaId]}ª vez no total</span>`:''}</div>
+        <span class="when">${fmtDataHora(e.data)}</span>
+        <button class="rm" data-h="${i}" title="Remover" style="background:none;color:#ff9a9a">✕</button>
+      </div>`).join('')}</div>`;
+  content.querySelectorAll('[data-h]').forEach(b=>b.onclick=async()=>{ h.splice(+b.dataset.h,1); userData.historico=h; await salvaUserData(); renderSidebar(); renderHistorico(content); });
+  $('#hClear').onclick=async()=>{ if(!confirm('Apagar todo o histórico?'))return; userData.historico=[]; await salvaUserData(); renderSidebar(); renderHistorico(content); };
+}
+function fmtDataHora(ms){ try{ return new Date(ms).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+
+/* ---------- planejador de cardápio (arrastar) ---------- */
+async function renderCardapio(content){
+  const todas=await store.getRecipes();
+  userData.cardapio=userData.cardapio||{};
+  const card=userData.cardapio;
+  const chip=r=>`<div class="rchip" draggable="true" data-rid="${r.id}">${r.emoji||catBy(r.categoria).emoji} ${esc(r.titulo)}</div>`;
+  const dayHTML=([k,nome])=>{
+    const its=card[k]||[];
+    return `<div class="day" data-day="${k}">
+      <div class="dh">${nome}</div>
+      ${its.length?its.map((it,i)=>`<div class="it" draggable="true" data-day="${k}" data-i="${i}" data-rid="${it.id}">${it.emoji||'🍽️'} ${esc(it.titulo)}<span class="rm" data-rmday="${k}" data-rmi="${i}">✕</span></div>`).join(''):`<div class="empty2">arraste aqui</div>`}
+    </div>`;
+  };
+  content.innerHTML=`<div class="planner">
+    <div class="recpool">
+      <div class="ph">Receitas</div>
+      <input id="poolSearch" placeholder="filtrar…">
+      <div class="pool" id="pool">${todas.map(chip).join('')}</div>
+    </div>
+    <div class="week">${DIAS.map(dayHTML).join('')}</div>
+  </div>`;
+
+  // filtro do pool
+  $('#poolSearch').oninput=e=>{ const q=e.target.value.toLowerCase(); $('#pool').innerHTML=todas.filter(r=>r.titulo.toLowerCase().includes(q)).map(chip).join(''); ligaArraste(); };
+
+  let dragInfo=null; // {rid, fromDay, fromIdx}
+  const ligaArraste=()=>{
+    content.querySelectorAll('.rchip').forEach(c=>c.ondragstart=e=>{ dragInfo={rid:c.dataset.rid,from:null}; e.dataTransfer.effectAllowed='copy'; });
+    content.querySelectorAll('.day .it').forEach(c=>c.ondragstart=e=>{ e.stopPropagation(); dragInfo={rid:c.dataset.rid,from:c.dataset.day,idx:+c.dataset.i}; e.dataTransfer.effectAllowed='move'; });
+  };
+  const salvarERe=async()=>{ await salvaUserData(); renderCardapio(content); };
+  content.querySelectorAll('.day').forEach(d=>{
+    d.ondragover=e=>{ e.preventDefault(); d.classList.add('over'); };
+    d.ondragleave=()=>d.classList.remove('over');
+    d.ondrop=async e=>{ e.preventDefault(); d.classList.remove('over');
+      const dia=d.dataset.day; if(!dragInfo)return;
+      const r=todas.find(x=>x.id===dragInfo.rid); if(!r)return;
+      if(dragInfo.from){ // mover de outro dia
+        const arr=card[dragInfo.from]||[]; arr.splice(dragInfo.idx,1); card[dragInfo.from]=arr;
+      }
+      card[dia]=[...(card[dia]||[]), {id:r.id,titulo:r.titulo,emoji:r.emoji||catBy(r.categoria).emoji}];
+      dragInfo=null; await salvarERe();
+    };
+  });
+  content.querySelectorAll('[data-rmday]').forEach(b=>b.onclick=async()=>{ const k=b.dataset.rmday; (card[k]||[]).splice(+b.dataset.rmi,1); await salvarERe(); });
+  ligaArraste();
 }
 function emptyHTML(t,s){return `<div class="empty"><div class="ico">🍳</div><b>${t}</b>${s}</div>`;}
 
@@ -1042,6 +1358,7 @@ async function renderAdmin(content){
   content.innerHTML=`
     <div class="adminhead">
       <button class="addbtn" id="btnNewUser">＋ Novo usuário</button>
+      <button class="bsoft" id="btnCSV" style="margin-left:8px">⬇️ Exportar CSV</button>
       <div class="kpi">
         <div class="box"><b>${total}</b>usuários</div>
         <div class="box"><b>${comAcesso}</b>com acesso</div>
@@ -1049,6 +1366,7 @@ async function renderAdmin(content){
         <div class="box"><b>${suspensos}</b>suspensos</div>
       </div>
     </div>
+    <div class="charts" id="charts"></div>
     <div class="atools">
       <div class="asearch">🔍 <input id="aSearch" placeholder="Buscar por nome ou e-mail…" value="${esc(adminBusca)}"></div>
       <div class="afilters">
@@ -1068,12 +1386,47 @@ async function renderAdmin(content){
   content.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>acaoAdmin(b.dataset.act,b.dataset.id,b));
   content.querySelectorAll('[data-filtro]').forEach(b=>b.onclick=()=>{adminFiltro=b.dataset.filtro;renderAdmin(content);});
   $('#btnNewUser').onclick=()=>openUserForm();
+  $('#btnCSV').onclick=()=>exportarUsuariosCSV();
+  montaGraficos();
   const as=$('#aSearch'); if(as){ let t; as.oninput=e=>{clearTimeout(t);t=setTimeout(()=>{adminBusca=e.target.value;renderAdmin(content);},180);}; as.focus(); as.setSelectionRange(as.value.length,as.value.length); }
   // seleção múltipla de usuários
   const cks=[...content.querySelectorAll('.uck')];
   cks.forEach(ck=>ck.onchange=()=>{ ck.checked?selUserSet.add(ck.dataset.uid):selUserSet.delete(ck.dataset.uid); atualizaUbar(); });
   const uall=$('#uall'); if(uall) uall.onchange=()=>{ cks.forEach(ck=>{ if(ck.disabled)return; ck.checked=uall.checked; ck.checked?selUserSet.add(ck.dataset.uid):selUserSet.delete(ck.dataset.uid); }); atualizaUbar(); };
   atualizaUbar();
+}
+
+/* ---------- estatísticas do admin ---------- */
+async function montaGraficos(){
+  const box=document.getElementById('charts'); if(!box) return;
+  // novos usuários por mês (últimos 6)
+  const meses=[]; const agora=new Date();
+  for(let i=5;i>=0;i--){ const d=new Date(agora.getFullYear(),agora.getMonth()-i,1); meses.push({k:`${d.getFullYear()}-${d.getMonth()}`, lbl:d.toLocaleDateString('pt-BR',{month:'short'}), n:0}); }
+  USERS.forEach(u=>{ if(!u.criadoEm)return; const d=new Date(u.criadoEm); const k=`${d.getFullYear()}-${d.getMonth()}`; const m=meses.find(x=>x.k===k); if(m)m.n++; });
+  const maxU=Math.max(1,...meses.map(m=>m.n));
+  // receitas mais vistas
+  let recs=[]; try{ recs=await store.getRecipes(); }catch(e){ recs=[]; }
+  const top=[...recs].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5);
+  const maxV=Math.max(1,...top.map(r=>r.views||0));
+  box.innerHTML=`
+    <div class="chart">
+      <h4>Novos usuários por mês</h4>
+      <div class="bars">${meses.map(m=>`<div class="b"><div class="v">${m.n}</div><div class="bar" style="height:${Math.round((m.n/maxU)*100)}%"></div><small>${m.lbl}</small></div>`).join('')}</div>
+    </div>
+    <div class="chart">
+      <h4>Receitas mais vistas</h4>
+      <div class="htop">${top.length?top.map((r,i)=>`<div class="r"><span class="n">${i+1}</span><span class="nm">${esc(r.titulo)}</span><span class="track"><i style="width:${Math.round(((r.views||0)/maxV)*100)}%"></i></span><span class="vv">${r.views||0}</span></div>`).join(''):'<div style="color:var(--mut2);font-size:13px">Ainda sem visualizações.</div>'}</div>
+    </div>`;
+}
+function exportarUsuariosCSV(){
+  const esc2=s=>`"${String(s??'').replace(/"/g,'""')}"`;
+  const linhas=[['Nome','E-mail','Papel','Situação','Acesso','Criado em']];
+  USERS.forEach(u=>linhas.push([u.nome,u.email,(u.role==='admin'?'Administrador':'Usuário'),(u.status==='suspenso'?'Suspenso':'Ativo'),acessoTexto(u),(u.criadoEm?new Date(u.criadoEm).toLocaleDateString('pt-BR'):'')]));
+  const csv='\ufeff'+linhas.map(l=>l.map(esc2).join(';')).join('\r\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`usuarios-mise-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+  toast('CSV exportado ⬇️');
 }
 function atualizaUbar(){
   let bar=document.getElementById('ubar');
@@ -1253,7 +1606,15 @@ async function openRecipe(id){
         <span class="pchip">⏱️ ${r.tempoMin} min</span>
         <span class="pchip" data-porc>🍽️ ${esc(r.porcoes||'')}</span>
         <span class="pchip">🔥 ${esc(r.dificuldade||'')}</span>
-        <span class="pchip">⭐ ${r.rating??'–'}</span>
+        <span class="pchip" data-ratem>⭐ ${mediaReceita(r)??'–'}${nReviews(r)?` (${nReviews(r)})`:''}</span>
+        <span class="pchip">👁️ ${(r.views||0)+1}</span>
+      </div>
+      ${(r.tags&&r.tags.length)?`<div class="mtags">${r.tags.map(t=>`<span class="mtag">${tagBy(t).emoji} ${tagBy(t).nome}</span>`).join('')}</div>`:''}
+      <div class="detacts">
+        <button class="prim" data-cook>👨‍🍳 Modo cozinhar</button>
+        <button data-addlist>🛒 Adicionar à lista</button>
+        <button data-done>✓ Já fiz</button>
+        <button data-share>🔗 Compartilhar</button>
       </div>
       <div class="scaler">
         <span class="lab">Ajustar quantidade <b data-fl>1×</b></span>
@@ -1262,6 +1623,7 @@ async function openRecipe(id){
       </div>
       <div class="mblock"><h5>Ingredientes</h5><ul data-ing>${(r.ingredientes||[]).map(i=>`<li><span class="b">◆</span><span></span></li>`).join('')}</ul></div>
       <div class="mblock"><h5>Modo de preparo</h5><ol>${(r.preparo||[]).map(p=>`<li><span>${esc(p)}</span></li>`).join('')}</ol></div>
+      <div class="reviews" data-reviews></div>
     </div>
     <div class="mfoot">
       <button class="bsoft" data-favm>${r.favorito?'🔖 Salva':'🤍 Salvar'}</button>
@@ -1296,7 +1658,110 @@ async function openRecipe(id){
       await store.deleteRecipe(id); closeOverlay(); toast('Receita excluída'); renderSidebar(); render();
     }
   };
+  // ações novas
+  m.querySelector('[data-cook]').onclick=()=>abrirModoCozinhar(r,fator);
+  m.querySelector('[data-addlist]').onclick=()=>adicionarNaLista(r,fator);
+  m.querySelector('[data-done]').onclick=()=>marcarFeito(r);
+  m.querySelector('[data-share]').onclick=()=>compartilhar(r);
+
   showOverlay(m);
+  // visualização (+1) — não bloqueia a UI
+  store.incView(id).catch(()=>{});
+  // avaliações
+  montaAvaliacoes(m, r);
+}
+
+/* ---------- compartilhar ---------- */
+async function compartilhar(r){
+  const url=`${location.origin}${location.pathname}?receita=${encodeURIComponent(r.id)}`;
+  try{ await navigator.clipboard.writeText(url); toast('Link copiado! 🔗'); }
+  catch(e){ prompt('Copie o link da receita:', url); }
+}
+
+/* ---------- avaliações dentro do detalhe ---------- */
+function estrelasHTML(nota,editavel){
+  return `<span class="stars ${editavel?'edit':''}">${[1,2,3,4,5].map(n=>`<span class="s ${n<=nota?'on':''}" data-star="${n}">★</span>`).join('')}</span>`;
+}
+async function montaAvaliacoes(m, r){
+  const box=m.querySelector('[data-reviews]'); if(!box) return;
+  let reviews=[]; try{ reviews=await store.getReviews(r.id); }catch(e){ reviews=[]; }
+  const minha=reviews.find(a=>usuario && a.autorId===usuario.id);
+  const media=reviews.length?Math.round(reviews.reduce((s,a)=>s+(+a.nota||0),0)/reviews.length*10)/10:null;
+  let notaForm=minha?minha.nota:0;
+  box.innerHTML=`
+    <h5>Avaliações</h5>
+    <div class="ravg"><span class="big">${media??'–'}</span> ${estrelasHTML(Math.round(media||0),false)} <span>${reviews.length} avaliação(ões)</span></div>
+    <div class="rform">
+      <div style="font-size:13px;color:var(--mut);margin-bottom:6px">${minha?'Editar sua avaliação':'Deixe sua avaliação'}</div>
+      ${estrelasHTML(notaForm,true)}
+      <textarea data-rcom placeholder="Conte como ficou… (opcional)">${esc(minha?.comentario||'')}</textarea>
+      <button class="bacc" data-rsend>${minha?'Atualizar':'Enviar avaliação'}</button>
+    </div>
+    <div data-rlist>${reviews.map(a=>`
+      <div class="ritem"><div class="top"><b>${esc(a.autorNome||'Usuário')}</b> ${estrelasHTML(a.nota,false)}<span class="when">${fmtDataHora(a.criadoEm)}</span></div>
+        ${a.comentario?`<p>${esc(a.comentario)}</p>`:''}</div>`).join('')||'<div style="color:var(--mut2);font-size:13px">Seja o primeiro a avaliar.</div>'}</div>`;
+  // seletor de estrelas do formulário
+  const form=box.querySelector('.rform .stars');
+  form.querySelectorAll('[data-star]').forEach(s=>s.onclick=()=>{ notaForm=+s.dataset.star; form.querySelectorAll('[data-star]').forEach(x=>x.classList.toggle('on',+x.dataset.star<=notaForm)); });
+  box.querySelector('[data-rsend]').onclick=async()=>{
+    if(!notaForm){ toast('Escolha de 1 a 5 estrelas'); return; }
+    try{
+      await store.addOrUpdateReview({receitaId:r.id, autorId:usuario.id, autorNome:(usuario.nome||usuario.email||'Usuário'), nota:notaForm, comentario:box.querySelector('[data-rcom]').value.trim()});
+      await recarregaReviews();
+      const rm=box.querySelector('.ravg'); // atualiza topo
+      const mp=m.querySelector('[data-ratem]'); if(mp) mp.textContent=`⭐ ${mediaReceita(r)??'–'}${nReviews(r)?` (${nReviews(r)})`:''}`;
+      toast('Avaliação salva ⭐'); render(); montaAvaliacoes(m,r);
+    }catch(e){ toast('Não foi possível salvar a avaliação.'); console.warn(e); }
+  };
+}
+
+/* ---------- modo cozinhar (tela cheia) ---------- */
+function abrirModoCozinhar(r, fator){
+  const passos=(r.preparo||[]); if(!passos.length){ toast('Esta receita não tem passos.'); return; }
+  let idx=0, tDur=0, tLeft=0, tRun=false, tick=null;
+  const cook=el(`<div class="cook on">
+    <div class="top"><b>👨‍🍳 ${esc(r.titulo)}</b><span style="color:var(--mut);font-size:13px" data-cnt></span><button class="x" data-cx>✕</button></div>
+    <div class="prog"><i data-cprog></i></div>
+    <div class="stage">
+      <div class="step-n" data-cn></div>
+      <div class="step-t" data-ct></div>
+      <div class="timer" data-ctimer style="display:none">
+        <div class="clock" data-cclock>00:00</div>
+        <div class="trow"><button class="go" data-cstart>▶ Iniciar</button><button data-creset>↺ Zerar</button></div>
+      </div>
+    </div>
+    <div class="nav"><button data-cprev>← Anterior</button><button class="go" data-cnext>Próximo →</button></div>
+  </div>`);
+  document.body.appendChild(cook);
+  const beep=()=>{ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(),g=a.createGain(); o.connect(g);g.connect(a.destination); o.type='sine';o.frequency.value=880; g.gain.setValueAtTime(.001,a.currentTime); g.gain.exponentialRampToValueAtTime(.4,a.currentTime+.05); o.start();
+      g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.8); o.stop(a.currentTime+.85);}catch(e){} };
+  const pausarTimer=()=>{ tRun=false; clearInterval(tick); cook.querySelector('[data-cstart]').textContent='▶ Iniciar'; };
+  function mostra(){
+    pausarTimer();
+    const p=passos[idx];
+    cook.querySelector('[data-cnt]').textContent=`Passo ${idx+1} de ${passos.length}`;
+    cook.querySelector('[data-cn]').textContent=`Passo ${idx+1}`;
+    cook.querySelector('[data-ct]').textContent=p;
+    cook.querySelector('[data-cprog]').style.width=`${((idx+1)/passos.length)*100}%`;
+    cook.querySelector('[data-cprev]').disabled=idx===0;
+    const next=cook.querySelector('[data-cnext]'); next.textContent= idx===passos.length-1?'✓ Concluir':'Próximo →';
+    tDur=duracaoPasso(p); tLeft=tDur;
+    const tw=cook.querySelector('[data-ctimer]');
+    if(tDur){ tw.style.display='flex'; cook.querySelector('[data-cclock]').textContent=fmtTimer(tLeft); }
+    else tw.style.display='none';
+  }
+  cook.querySelector('[data-cstart]').onclick=()=>{
+    if(tRun){ pausarTimer(); return; }
+    tRun=true; cook.querySelector('[data-cstart]').textContent='⏸ Pausar';
+    tick=setInterval(()=>{ tLeft--; cook.querySelector('[data-cclock]').textContent=fmtTimer(Math.max(0,tLeft));
+      if(tLeft<=0){ pausarTimer(); beep(); toast('⏰ Tempo do passo!'); } },1000);
+  };
+  cook.querySelector('[data-creset]').onclick=()=>{ pausarTimer(); tLeft=tDur; cook.querySelector('[data-cclock]').textContent=fmtTimer(tLeft); };
+  cook.querySelector('[data-cprev]').onclick=()=>{ if(idx>0){idx--;mostra();} };
+  cook.querySelector('[data-cnext]').onclick=()=>{ if(idx<passos.length-1){idx++;mostra();} else { fecha(); marcarFeito(r); } };
+  function fecha(){ pausarTimer(); cook.remove(); }
+  cook.querySelector('[data-cx]').onclick=fecha;
+  mostra();
 }
 
 /* ---------- formulário criar/editar ---------- */
@@ -1334,6 +1799,10 @@ function openForm(r){
       </div>
       ${campoImagem}
       <div class="field"><label>Emoji (opcional)</label><input id="f_emoji" maxlength="4" value="${editing?esc(r.emoji||''):''}" placeholder="🍰"></div>
+      <div class="field"><label>Tags / dietas</label>
+        <div class="tagchips" id="f_tags">${TAGS.map(t=>`<button type="button" data-ftag="${t.slug}" class="tagchip ${editing&&(r.tags||[]).includes(t.slug)?'on':''}">${t.emoji} ${t.nome}</button>`).join('')}</div>
+        <div class="help">Clique para marcar. Aparecem como filtro nas listas.</div>
+      </div>
       <div class="field"><label>Ingredientes</label><textarea id="f_ing" placeholder="Ex.: 500g de farinha">${editing?esc((r.ingredientes||[]).join('\n')):''}</textarea><div class="help">Um por linha, com a medida na frente: <b>500g de farinha</b> · <b>2 colheres de açúcar</b> · <b>1 xícara de leite</b>. Assim o app recalcula ao mudar a porção.</div></div>
       <div class="field"><label>Modo de preparo</label><textarea id="f_prep" placeholder="Um passo por linha">${editing?esc((r.preparo||[]).join('\n')):''}</textarea><div class="help">Um passo por linha.</div></div>
     </div>
@@ -1355,17 +1824,20 @@ function openForm(r){
     inputImg.addEventListener('input',atualizaPrev); atualizaPrev();
   }
 
+  m.querySelectorAll('[data-ftag]').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
+
   m.querySelector('[data-close]').onclick=closeOverlay;
   m.querySelector('[data-save]').onclick=async()=>{
     const titulo=m.querySelector('#f_titulo').value.trim();
     if(!titulo){ const t=m.querySelector('#f_titulo'); t.focus(); t.style.borderColor='#ff8a8a'; return; }
+    const tags=[...m.querySelectorAll('[data-ftag].on')].map(b=>b.dataset.ftag);
     const rec={
       id: editing?r.id:undefined, favorito: editing?r.favorito:false, criadoEm: editing?r.criadoEm:undefined,
       autorId: editing?(r.autorId||null):(usuario?usuario.id:null),
       titulo, categoria:m.querySelector('#f_cat').value, emoji:m.querySelector('#f_emoji').value.trim(),
       imagem: inputImg?inputImg.value.trim():(editing?(r.imagem||''):''),
       tempoMin:+m.querySelector('#f_tempo').value||0, porcoes:m.querySelector('#f_porc').value.trim(), dificuldade:m.querySelector('#f_dif').value,
-      rating: editing?r.rating:5.0,
+      rating: editing?r.rating:5.0, tags, views: editing?(r.views||0):0,
       ingredientes:m.querySelector('#f_ing').value.split('\n').map(s=>s.trim()).filter(Boolean),
       preparo:m.querySelector('#f_prep').value.split('\n').map(s=>s.trim()).filter(Boolean),
     };
