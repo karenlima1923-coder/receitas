@@ -887,7 +887,7 @@ function renderLogin(modo){
     try{
       if(modo==='entrar'){ await fazerLogin($('#a_email').value, $('#a_senha').value); }
       else{ usuario=await auth.signup({nome:$('#a_nome').value, email:$('#a_email').value, senha:$('#a_senha').value});
-        USERS=await store.getUsers(); toast('Conta criada! Bem-vindo 🎉'); startApp(); }
+        try{ USERS=await store.getUsers(); }catch(e2){ USERS=[]; } toast('Conta criada! Bem-vindo 🎉'); startApp(); }
     }catch(err){ erro(traduzErroAuth(err)); }
   };
   g.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')$('#a_go').click();}));
@@ -895,7 +895,7 @@ function renderLogin(modo){
 }
 async function fazerLogin(email,senha){
   usuario=await auth.login(email,senha);
-  USERS=await store.getUsers();
+  try{ USERS=await store.getUsers(); }catch(e){ USERS=[]; } // listar usuários é só p/ admin — não pode travar o login
   startApp();
 }
 async function logout(){ await auth.logout(); usuario=null; view={tipo:'inicio'}; termo=''; renderLogin('entrar'); }
@@ -1019,7 +1019,7 @@ function cardHTML(r, selMode, sel){
     ? `<div class="ckbox ${sel?'on':''}">✓</div>`
     : `<button class="fav ${r.favorito?'on':''}" data-fav="${r.id}" title="Salvar">${r.favorito?'🔖':'🤍'}</button>`;
   return `<article class="card ${sel?'sel':''}" data-open="${r.id}">
-    <div class="ph" style="background:${c.grad}">${img}<span class="emoji">${r.emoji||c.emoji}</span>
+    <div class="ph" style="background:${c.grad}">${img}${r.imagem?'':`<span class="emoji">${r.emoji||c.emoji}</span>`}
       <span class="dot">${c.nome}</span>
       ${canto}
     </div>
