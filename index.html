@@ -1,0 +1,1115 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mise · Receitas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Carrega as implementações Firebase (dados + login) e inicia o app.
+     Se não carregar (ex.: aberto por file://), o app cai no modo local automaticamente. -->
+<script type="module">
+  window.__moduleRan = true;
+  try {
+    const m = await import('./firestore-store.js');
+    window.FirestoreStore = m.FirestoreStore;
+    window.FirebaseAuthProvider = m.FirebaseAuthProvider;
+  } catch (e) {
+    console.warn('Firebase não carregou — rodando em modo local (IndexedDB):', e);
+  }
+  if (window.boot) window.boot();
+</script>
+<style>
+  :root{
+    --bg:#0A0D14; --panel:#11151E; --line:rgba(255,255,255,.08);
+    --acc:#3D7BFF; --acc2:#7A5CFF; --acc-bright:#8FB4FF; --acc-on:#06122e;
+    --feat-a:#1e3c78; --feat-b:#0c1830;
+    --txt:#E9EEF2; --mut:#8a949c; --mut2:#6b7780;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select,textarea{font-family:inherit}
+  ::selection{background:var(--acc);color:#06122e}
+  :focus-visible{outline:2px solid var(--acc-bright);outline-offset:2px}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+
+  .shell{display:flex;max-width:1340px;margin:0 auto;min-height:100vh}
+
+  /* ===== sidebar ===== */
+  aside{width:248px;flex:0 0 248px;border-right:1px solid var(--line);padding:24px 18px;
+    position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;overflow:auto}
+  .logo{font-family:'Sora';font-weight:800;font-size:20px;display:flex;align-items:center;gap:9px;padding:4px 8px 18px}
+  .logo .sq{width:30px;height:30px;border-radius:9px;background:var(--acc);color:var(--acc-on);display:grid;place-items:center;font-size:16px}
+  .navlbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut2);padding:14px 10px 6px;font-weight:700}
+  .nlink{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:11px;color:#9aa7b1;font-size:14.5px;font-weight:500;transition:.18s;width:100%;text-align:left}
+  .nlink .e{font-size:16px;width:20px;text-align:center}
+  .nlink:hover{background:rgba(255,255,255,.05);color:#fff}
+  .nlink.on{background:color-mix(in srgb,var(--acc) 16%,transparent);color:var(--acc-bright);font-weight:600}
+  .nlink .ct{margin-left:auto;font-size:12px;color:var(--mut2);font-weight:600}
+  .nlink.on .ct{color:var(--acc-bright)}
+  .profile{margin-top:auto;display:flex;align-items:center;gap:10px;padding:11px;border-radius:13px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+  .profile .av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:grid;place-items:center;font-size:14px;font-weight:700;color:var(--acc-on);flex:0 0 auto}
+  .profile b{font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .profile span{font-size:11px;color:var(--mut2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rb{font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:2px 6px;border-radius:6px;text-transform:uppercase;flex:0 0 auto}
+  .rb.adm{background:color-mix(in srgb,var(--acc) 22%,transparent);color:var(--acc-bright)}
+  .rb.ok{background:rgba(52,211,153,.18);color:#6ee7b7}
+  .rb.exp{background:rgba(245,180,80,.18);color:#fbbf24}
+  .rb.sus{background:rgba(255,90,90,.18);color:#ff9a9a}
+  .demo{margin-top:8px;background:rgba(255,255,255,.03);border:1px dashed var(--line);border-radius:11px;padding:9px 10px}
+  .demo span{font-size:10.5px;color:var(--mut2);display:block;margin-bottom:5px;font-weight:600}
+  .demo select{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:12.5px;padding:7px 8px;outline:none}
+
+  /* banner de status (acesso) */
+  .banner{display:flex;align-items:center;gap:12px;border-radius:14px;padding:13px 16px;margin-bottom:22px;font-size:14px;border:1px solid}
+  .banner.warn{background:rgba(245,180,80,.1);border-color:rgba(245,180,80,.35);color:#fcd9a0}
+  .banner.bad{background:rgba(255,90,90,.1);border-color:rgba(255,90,90,.35);color:#ffc2c2}
+  .banner .bi{font-size:18px}
+  .banner b{color:#fff}
+
+  /* admin */
+  .adminhead{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+  .adminhead .kpi{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+  .kpi .box{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:12.5px;color:var(--mut)}
+  .kpi .box b{display:block;font-family:'Sora';font-size:20px;color:#fff}
+  .utable{width:100%;border-collapse:separate;border-spacing:0 8px}
+  .utable th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut2);padding:0 14px 4px;font-weight:700}
+  .utable td{background:rgba(255,255,255,.035);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:13px 14px;font-size:13.5px;vertical-align:middle}
+  .utable td:first-child{border-left:1px solid var(--line);border-radius:12px 0 0 12px}
+  .utable td:last-child{border-right:1px solid var(--line);border-radius:0 12px 12px 0}
+  .uname{display:flex;align-items:center;gap:10px}
+  .uname .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--acc-on);flex:0 0 auto}
+  .uname b{font-size:13.5px}.uname span{font-size:11.5px;color:var(--mut2)}
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px}
+  .tag.ok{background:rgba(52,211,153,.16);color:#6ee7b7}
+  .tag.exp{background:rgba(245,180,80,.16);color:#fbbf24}
+  .tag.sus{background:rgba(255,90,90,.16);color:#ff9a9a}
+  .tag.adm{background:color-mix(in srgb,var(--acc) 20%,transparent);color:var(--acc-bright)}
+  .uacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .uacts button{font-size:12px;font-weight:600;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:#cdd6dd;transition:.15s}
+  .uacts button:hover{background:rgba(255,255,255,.12);color:#fff}
+  .uacts button.danger{color:#ff9a9a}
+  .uacts .menu{position:relative}
+  .uacts .pop{position:absolute;right:0;top:calc(100% + 4px);z-index:5;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:6px;display:none;flex-direction:column;min-width:170px;box-shadow:0 20px 40px -16px #000}
+  .uacts .pop.on{display:flex}
+  .uacts .pop button{text-align:left;background:none;border:none;border-radius:8px}
+  .uacts .pop button:hover{background:rgba(255,255,255,.08)}
+  @media(max-width:760px){.utable thead{display:none}.utable td{display:block;border:1px solid var(--line);border-radius:10px;margin-top:-1px}.utable tr{display:block;margin-bottom:10px}.uacts{justify-content:flex-start}}
+
+  /* ===== tela de login ===== */
+  .authgate{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 100% at 20% 0%,#16213a,#0A0D14 60%),var(--bg);overflow:auto}
+  .authgate.on{display:flex}
+  .authcard{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:30px 28px;box-shadow:0 40px 90px -40px #000}
+  .authcard .brand{display:flex;align-items:center;gap:10px;font-family:'Sora';font-weight:800;font-size:22px;margin-bottom:4px}
+  .authcard .brand .sq{width:34px;height:34px;border-radius:10px;background:var(--acc);color:var(--acc-on);display:grid;place-items:center;font-size:18px}
+  .authcard .sub{color:var(--mut);font-size:14px;margin-bottom:22px}
+  .authtabs{display:flex;background:rgba(255,255,255,.05);border-radius:11px;padding:4px;gap:3px;margin-bottom:20px}
+  .authtabs button{flex:1;padding:9px;border-radius:8px;font-size:14px;font-weight:700;color:var(--mut)}
+  .authtabs button.on{background:var(--acc);color:var(--acc-on)}
+  .authcard .field{margin-bottom:14px}
+  .autherr{background:rgba(255,90,90,.12);border:1px solid rgba(255,90,90,.35);color:#ffc2c2;font-size:13px;padding:10px 12px;border-radius:10px;margin-bottom:14px;display:none}
+  .autherr.on{display:block}
+  .authcard .bacc{width:100%;justify-content:center;display:flex;padding:13px;font-size:15px;margin-top:4px}
+  .demoaccts{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}
+  .demoaccts .t{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut2);font-weight:700;margin-bottom:10px}
+  .demoaccts .da{display:flex;gap:8px}
+  .demoaccts .da button{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:10px;padding:9px 6px;font-size:12px;font-weight:600;color:#cdd6dd;display:flex;flex-direction:column;gap:2px;align-items:center}
+  .demoaccts .da button:hover{border-color:var(--acc);color:#fff}
+  .demoaccts .da button small{font-size:9.5px;color:var(--mut2);font-weight:600}
+  .logoutbtn{margin-top:8px;width:100%;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:11px;padding:10px;font-size:13px;font-weight:600;color:#cdd6dd;display:flex;align-items:center;justify-content:center;gap:7px}
+  .logoutbtn:hover{background:rgba(255,90,90,.12);border-color:rgba(255,90,90,.35);color:#ffc2c2}
+
+  /* ===== main ===== */
+  main{flex:1;padding:26px 32px 60px;min-width:0}
+  .topbar{display:flex;align-items:center;gap:16px;margin-bottom:26px;flex-wrap:wrap}
+  .topbar h1{font-family:'Sora';font-weight:700;font-size:24px}
+  .topbar h1 span{color:var(--acc-bright)}
+  .bigsearch{margin-left:auto;display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.05);
+    border:1px solid var(--line);padding:0 16px;border-radius:13px;width:300px;transition:.2s}
+  .bigsearch:focus-within{border-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+  .bigsearch input{background:none;border:none;outline:none;color:var(--txt);font-size:14px;padding:11px 0;width:100%}
+  .bigsearch input::placeholder{color:var(--mut2)}
+  .iconbtn{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);display:grid;place-items:center;font-size:16px;flex:0 0 auto}
+  .addbtn{display:flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-on);padding:11px 16px;border-radius:12px;font-weight:700;font-size:14px;flex:0 0 auto}
+  .addbtn:hover{filter:brightness(1.08)}
+
+  /* feature + stats */
+  .feat{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;margin-bottom:30px}
+  .feature{border-radius:22px;padding:34px;position:relative;overflow:hidden;
+    background:radial-gradient(130% 120% at 80% 10%,var(--feat-a),var(--feat-b) 60%,var(--bg));
+    border:1px solid color-mix(in srgb,var(--acc) 25%,transparent);display:flex;flex-direction:column;justify-content:flex-end;min-height:230px;cursor:pointer}
+  .feature .g{position:absolute;right:-10px;top:-20px;font-size:170px;opacity:.22;line-height:1}
+  .feature .k{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--acc-bright);font-weight:700}
+  .feature h2{font-family:'Sora';font-weight:700;font-size:30px;line-height:1.05;margin:10px 0 14px;max-width:340px;color:#fff}
+  .feature .go{align-self:flex-start;background:var(--acc);color:var(--acc-on);padding:11px 20px;border-radius:11px;font-weight:700;font-size:14px}
+  .statwrap{display:grid;grid-template-rows:1fr 1fr;gap:20px}
+  .stat{border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line);padding:22px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+  .stat .n{font-family:'Sora';font-weight:800;font-size:34px;color:#fff}
+  .stat .n em{color:var(--acc-bright);font-style:normal}
+  .stat span{font-size:13.5px;color:var(--mut)}
+
+  .row{display:flex;align-items:center;justify-content:space-between;margin:6px 0 18px}
+  .row h3{font-family:'Sora';font-weight:700;font-size:20px}
+  .row a{font-size:13.5px;color:var(--acc-bright);font-weight:600;cursor:pointer}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:34px}
+
+  .card{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;overflow:hidden;transition:.22s;cursor:pointer;position:relative}
+  .card:hover{transform:translateY(-5px);border-color:color-mix(in srgb,var(--acc) 45%,transparent)}
+  .card .ph{aspect-ratio:16/10;position:relative;display:grid;place-items:center;font-size:60px}
+  .card .dot{position:absolute;top:11px;left:11px;background:rgba(10,12,16,.72);backdrop-filter:blur(6px);padding:5px 11px;border-radius:999px;font-size:11.5px;font-weight:700;color:var(--acc-bright)}
+  .card .fav{position:absolute;top:9px;right:9px;width:33px;height:33px;border-radius:50%;background:rgba(10,12,16,.72);backdrop-filter:blur(6px);display:grid;place-items:center;font-size:15px;border:1px solid var(--line)}
+  .card .fav.on{background:var(--acc);color:#fff;border-color:transparent}
+  .card .body{padding:15px 16px 16px}
+  .card h4{font-family:'Sora';font-weight:600;font-size:16px;margin-bottom:11px;line-height:1.2}
+  .card .meta{display:flex;gap:10px;flex-wrap:wrap}
+  .pchip{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);padding:5px 10px;border-radius:8px;font-size:12px;color:#9aa7b1;font-weight:500}
+
+  .empty{border:1px dashed var(--line);border-radius:18px;padding:50px 24px;text-align:center;color:var(--mut)}
+  .empty .ico{font-size:42px;margin-bottom:12px}
+  .empty b{display:block;color:var(--txt);font-family:'Sora';font-size:17px;margin-bottom:6px}
+
+  .card .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .card .ph .emoji{position:relative;z-index:0}
+
+  /* ===== modal (cabeçalho fixo + corpo rolável + rodapé fixo) ===== */
+  .overlay{position:fixed;inset:0;background:rgba(4,6,10,.66);backdrop-filter:blur(4px);z-index:100;
+    display:flex;align-items:center;justify-content:center;padding:28px 18px;overflow:auto;opacity:0;pointer-events:none;transition:.2s}
+  .overlay.on{opacity:1;pointer-events:auto}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:22px;width:100%;max-width:620px;overflow:hidden;
+    display:flex;flex-direction:column;max-height:calc(100vh - 56px);transform:translateY(10px);transition:.2s}
+  .overlay.on .modal{transform:none}
+
+  .mhead{position:relative;min-height:150px;display:flex;align-items:flex-end;padding:20px 24px;flex:0 0 auto;overflow:hidden}
+  .mhead .himg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .mhead .hov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.1),rgba(0,0,0,.5));z-index:1}
+  .mhead .g{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:96px;opacity:.85;z-index:2}
+  .mhead .dot{background:rgba(10,12,16,.55);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;position:relative;z-index:2}
+  .mclose{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;background:rgba(10,12,16,.5);display:grid;place-items:center;font-size:16px;color:#fff;z-index:3}
+
+  .mscroll{padding:22px 24px;overflow:auto;flex:1 1 auto;min-height:0}
+  .mscroll h2{font-family:'Sora';font-weight:700;font-size:24px;margin-bottom:14px}
+  .mmeta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .mblock h5{font-family:'Sora';font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--acc-bright);margin:18px 0 10px}
+  .mblock ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .mblock li{display:flex;gap:11px;font-size:14.5px;color:#cdd6dd;line-height:1.45}
+  .mblock li .b{color:var(--acc);flex:0 0 auto;margin-top:1px}
+  .mblock li .q{color:#fff;font-weight:600}
+  .mblock ol{list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:12px}
+  .mblock ol li{counter-increment:s}
+  .mblock ol li::before{content:counter(s);flex:0 0 26px;height:26px;border-radius:8px;background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc-bright);font-weight:700;font-size:13px;display:inline-grid;place-items:center}
+
+  /* controle de porção */
+  .scaler{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:4px}
+  .scaler .lab{font-size:13px;font-weight:600;color:var(--mut)}
+  .scaler .lab b{color:var(--acc-bright);font-weight:700}
+  .scaler .steps{display:flex;gap:4px;margin-left:auto;background:rgba(0,0,0,.25);padding:4px;border-radius:10px}
+  .scaler .steps button{padding:7px 12px;border-radius:8px;font-size:13px;font-weight:700;color:#9aa7b1;transition:.15s}
+  .scaler .steps button:hover{color:#fff}
+  .scaler .steps button.on{background:var(--acc);color:var(--acc-on)}
+  .scaler .pm{display:flex;align-items:center;gap:8px}
+  .scaler .pm button{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:16px;font-weight:700;color:#fff;display:grid;place-items:center}
+  .scaler .pm button:hover{border-color:var(--acc)}
+  .scaler .pm .val{min-width:34px;text-align:center;font-weight:700;font-size:14px}
+
+  .mfoot{display:flex;gap:10px;align-items:center;padding:15px 24px;border-top:1px solid var(--line);flex:0 0 auto;background:var(--panel);flex-wrap:wrap}
+  .mfoot .grow{flex:1}
+  .bsoft{background:rgba(255,255,255,.06);border:1px solid var(--line);padding:11px 16px;border-radius:11px;font-weight:600;font-size:14px}
+  .bsoft:hover{background:rgba(255,255,255,.1)}
+  .bacc{background:var(--acc);color:var(--acc-on);padding:11px 18px;border-radius:11px;font-weight:700;font-size:14px}
+  .bdanger{color:#ff8a8a}.bdanger:hover{background:rgba(255,80,80,.12)}
+
+  /* form */
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin-bottom:7px}
+  .field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--line);
+    border-radius:11px;padding:11px 13px;color:var(--txt);font-size:14px;outline:none;transition:.18s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:color-mix(in srgb,var(--acc) 55%,transparent)}
+  .field textarea{resize:vertical;min-height:84px;line-height:1.5}
+  .field .help{font-size:12px;color:var(--mut2);margin-top:6px}
+  .frow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .form-title{font-family:'Sora';font-weight:700;font-size:21px;padding:22px 24px 16px;flex:0 0 auto}
+  .imgprev{margin-top:10px;border-radius:11px;overflow:hidden;border:1px solid var(--line);aspect-ratio:16/9;background:rgba(255,255,255,.03);display:none}
+  .imgprev img{width:100%;height:100%;object-fit:cover}
+  .imgprev.on{display:block}
+
+  /* toast */
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);
+    border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);padding:13px 20px;border-radius:13px;font-size:14px;font-weight:600;
+    z-index:200;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 20px 50px -20px #000}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+
+  .mobtoggle{display:none}
+  @media(max-width:900px){
+    .shell{flex-direction:column}
+    aside{width:100%;flex:none;position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line)}
+    .navlbl,.profile{display:none}.nlink{padding:8px 12px;width:auto}.nlink .ct{display:none}
+    .feat{grid-template-columns:1fr}.grid{grid-template-columns:repeat(2,1fr)}
+    .bigsearch{width:100%;order:3}.topbar{gap:10px}
+  }
+  @media(max-width:560px){.grid{grid-template-columns:1fr}.frow{grid-template-columns:1fr}.statwrap{grid-template-rows:auto auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside id="sidebar"></aside>
+  <main>
+    <div class="topbar">
+      <h1 id="pageTitle">Olá, Maria 👋 <span>o que vamos cozinhar?</span></h1>
+      <div class="bigsearch"><span>🔍</span><input id="search" placeholder="Buscar por nome ou ingrediente…" autocomplete="off"></div>
+      <button class="addbtn" id="btnAdd">＋ Nova receita</button>
+    </div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="toast" id="toast"></div>
+<div class="authgate" id="authgate"></div>
+
+<!-- =====================================================================
+     CAMADA DE ARMAZENAMENTO (storage abstraction)
+     ---------------------------------------------------------------------
+     O app inteiro fala SÓ com a interface `RecipeStore`.
+     Hoje rodamos com `IndexedDBStore`. Para migrar pro Firestore no futuro,
+     veja o arquivo  firestore-store.js  e troque a linha marcada com
+     [TROCAR AQUI] lá embaixo. Nada mais no app precisa mudar.
+===================================================================== -->
+<script>
+/* ---- Interface comum (contrato) ---- */
+class RecipeStore {
+  async init() {}
+  async seedIfEmpty(/*cats, recipes, users*/) {}
+  async getCategories() {}                 // -> [{slug,nome,emoji,grad}]
+  async getRecipes({categoria, busca, favoritas} = {}) {} // -> [receita]
+  async getRecipe(id) {}                    // -> receita | null
+  async saveRecipe(receita) {}              // cria (sem id) ou atualiza (com id) -> receita
+  async deleteRecipe(id) {}
+  async toggleFavorite(id) {}               // -> bool novo estado
+  async stats() {}                          // -> {total, tempoMedio}
+  // --- usuários / sessão (mapeiam para Firebase Auth + coleção "usuarios") ---
+  async getUsers() {}                       // -> [usuario]
+  async getUser(id) {}                      // -> usuario | null
+  async saveUser(usuario) {}                // cria/atualiza -> usuario
+  async deleteUser(id) {}
+  async getMeta(k) {}                       // valor de configuração (ex.: sessão)
+  async setMeta(k, v) {}
+}
+
+/* ---- Implementação IndexedDB (em uso hoje) ---- */
+class IndexedDBStore extends RecipeStore {
+  constructor(){ super(); this.db=null; this.NAME='mise_receitas'; this.VER=2; }
+  init(){
+    return new Promise((res,rej)=>{
+      const req=indexedDB.open(this.NAME,this.VER);
+      req.onupgradeneeded=e=>{
+        const db=e.target.result;
+        if(!db.objectStoreNames.contains('categorias')) db.createObjectStore('categorias',{keyPath:'slug'});
+        if(!db.objectStoreNames.contains('receitas')){
+          const s=db.createObjectStore('receitas',{keyPath:'id'});
+          s.createIndex('categoria','categoria',{unique:false});
+        }
+        if(!db.objectStoreNames.contains('usuarios')) db.createObjectStore('usuarios',{keyPath:'id'});
+        if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'k'});
+      };
+      req.onsuccess=e=>{this.db=e.target.result;res();};
+      req.onerror=e=>rej(e.target.error);
+    });
+  }
+  _tx(store,mode='readonly'){ return this.db.transaction(store,mode).objectStore(store); }
+  _all(store){ return new Promise((res,rej)=>{const r=this._tx(store).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}); }
+  _put(store,val){ return new Promise((res,rej)=>{const r=this._tx(store,'readwrite').put(val);r.onsuccess=()=>res(val);r.onerror=()=>rej(r.error);}); }
+  _get(store,key){ return new Promise((res,rej)=>{const r=this._tx(store).get(key);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);}); }
+  _del(store,key){ return new Promise((res,rej)=>{const r=this._tx(store,'readwrite').delete(key);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);}); }
+
+  async seedIfEmpty(cats,recipes,users){
+    const existing=await this._all('receitas');
+    if(!existing.length){
+      for(const c of cats) await this._put('categorias',c);
+      for(const r of recipes) await this._put('receitas',r);
+    }
+    if(users && !(await this._all('usuarios')).length){
+      for(const u of users) await this._put('usuarios',u);
+    }
+  }
+  async getCategories(){ return (await this._all('categorias')).sort((a,b)=>a.ordem-b.ordem); }
+  async getRecipes({categoria,busca,favoritas}={}){
+    let list=await this._all('receitas');
+    if(categoria) list=list.filter(r=>r.categoria===categoria);
+    if(favoritas) list=list.filter(r=>r.favorito);
+    if(busca){
+      const q=busca.toLowerCase();
+      list=list.filter(r=>r.titulo.toLowerCase().includes(q) ||
+        (r.ingredientes||[]).some(i=>i.toLowerCase().includes(q)));
+    }
+    return list.sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0));
+  }
+  async getRecipe(id){ return new Promise((res,rej)=>{const r=this._tx('receitas').get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>rej(r.error);}); }
+  async saveRecipe(rec){
+    if(!rec.id){ rec.id=(crypto.randomUUID?crypto.randomUUID():'r'+Date.now()+Math.random().toString(16).slice(2)); rec.criadoEm=Date.now(); }
+    return this._put('receitas',rec);
+  }
+  async deleteRecipe(id){ return new Promise((res,rej)=>{const r=this._tx('receitas','readwrite').delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error);}); }
+  async toggleFavorite(id){ const r=await this.getRecipe(id); r.favorito=!r.favorito; await this._put('receitas',r); return r.favorito; }
+  async stats(){ const l=await this._all('receitas'); const t=l.reduce((s,r)=>s+(+r.tempoMin||0),0); return {total:l.length,tempoMedio:l.length?Math.round(t/l.length):0}; }
+  async getUsers(){ return (await this._all('usuarios')).sort((a,b)=>(a.criadoEm||0)-(b.criadoEm||0)); }
+  async getUser(id){ return this._get('usuarios',id); }
+  async saveUser(u){ if(!u.id){ u.id='u'+Date.now()+Math.random().toString(16).slice(2); u.criadoEm=Date.now(); } return this._put('usuarios',u); }
+  async deleteUser(id){ return this._del('usuarios',id); }
+  async getMeta(k){ const r=await this._get('meta',k); return r?r.v:null; }
+  async setMeta(k,v){ return this._put('meta',{k,v}); }
+}
+
+/* ---- Fallback em memória (se o navegador bloquear IndexedDB, ex: preview) ---- */
+class MemoryStore extends RecipeStore {
+  constructor(){ super(); this.cats=[]; this.recs=[]; this.users=[]; this.meta={}; }
+  async init(){}
+  async seedIfEmpty(cats,recipes,users){
+    if(!this.recs.length){ this.cats=[...cats]; this.recs=recipes.map(r=>({...r})); }
+    if(users && !this.users.length){ this.users=users.map(u=>({...u})); }
+  }
+  async getCategories(){ return [...this.cats].sort((a,b)=>a.ordem-b.ordem); }
+  async getRecipes({categoria,busca,favoritas}={}){
+    let l=[...this.recs];
+    if(categoria) l=l.filter(r=>r.categoria===categoria);
+    if(favoritas) l=l.filter(r=>r.favorito);
+    if(busca){const q=busca.toLowerCase();l=l.filter(r=>r.titulo.toLowerCase().includes(q)||(r.ingredientes||[]).some(i=>i.toLowerCase().includes(q)));}
+    return l.sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0));
+  }
+  async getRecipe(id){ return this.recs.find(r=>r.id===id)||null; }
+  async saveRecipe(rec){
+    if(!rec.id){ rec.id='r'+Date.now()+Math.random().toString(16).slice(2); rec.criadoEm=Date.now(); this.recs.push(rec); }
+    else { const i=this.recs.findIndex(r=>r.id===rec.id); if(i>=0) this.recs[i]=rec; }
+    return rec;
+  }
+  async deleteRecipe(id){ this.recs=this.recs.filter(r=>r.id!==id); }
+  async toggleFavorite(id){ const r=await this.getRecipe(id); r.favorito=!r.favorito; return r.favorito; }
+  async stats(){ const t=this.recs.reduce((s,r)=>s+(+r.tempoMin||0),0); return {total:this.recs.length,tempoMedio:this.recs.length?Math.round(t/this.recs.length):0}; }
+  async getUsers(){ return [...this.users].sort((a,b)=>(a.criadoEm||0)-(b.criadoEm||0)); }
+  async getUser(id){ return this.users.find(u=>u.id===id)||null; }
+  async saveUser(u){
+    if(!u.id){ u.id='u'+Date.now()+Math.random().toString(16).slice(2); u.criadoEm=Date.now(); this.users.push(u); }
+    else { const i=this.users.findIndex(x=>x.id===u.id); if(i>=0) this.users[i]=u; }
+    return u;
+  }
+  async deleteUser(id){ this.users=this.users.filter(u=>u.id!==id); }
+  async getMeta(k){ return k in this.meta?this.meta[k]:null; }
+  async setMeta(k,v){ this.meta[k]=v; }
+}
+
+/* =====================================================================
+   CAMADA DE AUTENTICAÇÃO (auth abstraction)
+   ---------------------------------------------------------------------
+   Login NÃO é Firestore — é o Firebase Authentication. Aqui usamos uma
+   versão local (LocalAuth) que valida contra a coleção "usuarios". Para
+   migrar, troque por FirebaseAuthProvider (veja firestore-store.js) — a
+   interface (login, signup, logout, current) é a mesma.
+===================================================================== -->
+class AuthProvider {
+  async current() {}                  // -> usuario logado | null
+  async login(email, senha) {}        // -> usuario | lança erro
+  async signup({nome,email,senha}) {} // -> usuario | lança erro
+  async logout() {}
+}
+class LocalAuth extends AuthProvider {
+  constructor(store){ super(); this.store=store; }
+  async current(){ const id=await this.store.getMeta('sessao'); return id?await this.store.getUser(id):null; }
+  async login(email,senha){
+    const u=(await this.store.getUsers()).find(x=>(x.email||'').toLowerCase()===email.trim().toLowerCase());
+    if(!u) throw new Error('E-mail não encontrado.');
+    if((u.senha||'')!==senha) throw new Error('Senha incorreta.');
+    await this.store.setMeta('sessao',u.id); return u;
+  }
+  async signup({nome,email,senha}){
+    email=email.trim();
+    if(!nome||!email||!senha) throw new Error('Preencha nome, e-mail e senha.');
+    if(senha.length<6) throw new Error('A senha precisa de pelo menos 6 caracteres.');
+    if((await this.store.getUsers()).some(x=>(x.email||'').toLowerCase()===email.toLowerCase()))
+      throw new Error('Este e-mail já está cadastrado.');
+    const u=await this.store.saveUser({nome:nome.trim(),email,senha,role:'user',status:'ativo',planoAte:null});
+    await this.store.setMeta('sessao',u.id); return u;
+  }
+  async logout(){ await this.store.setMeta('sessao',null); }
+}
+</script>
+
+<!-- =====================================================================
+     DADOS INICIAIS (seed) — viram coleções no IndexedDB / Firestore
+===================================================================== -->
+<script>
+const SEED_CATS=[
+  {slug:'salgadas',  nome:'Salgadas',  emoji:'🧀', ordem:1, grad:'radial-gradient(120% 120% at 70% 20%,#7a4a20,#241308)'},
+  {slug:'doces',     nome:'Doces',     emoji:'🍰', ordem:2, grad:'radial-gradient(120% 120% at 70% 20%,#7a3a2a,#240e0a)'},
+  {slug:'bebidas',   nome:'Bebidas',   emoji:'🥤', ordem:3, grad:'radial-gradient(120% 120% at 70% 20%,#2a5a6e,#0a1c24)'},
+  {slug:'saudaveis', nome:'Saudáveis', emoji:'🥗', ordem:4, grad:'radial-gradient(120% 120% at 70% 20%,#3a6a3a,#0e1f0c)'},
+  {slug:'massas',    nome:'Massas',    emoji:'🍜', ordem:5, grad:'radial-gradient(120% 120% at 70% 20%,#8a6a2a,#241b08)'},
+  {slug:'lanches',   nome:'Lanches',   emoji:'🥪', ordem:6, grad:'radial-gradient(120% 120% at 70% 20%,#7a5a2a,#241808)'},
+];
+const R=(o)=>({favorito:false,criadoEm:Date.now(),...o});
+const SEED_RECIPES=[
+  R({id:'s1',categoria:'salgadas',titulo:'Coxinha cremosa de frango',emoji:'🥟',tempoMin:40,porcoes:'12 un',dificuldade:'Médio',rating:4.8,
+    ingredientes:['2 xíc. de farinha de trigo','2 xíc. de caldo de galinha','2 col. de manteiga','300g de frango cozido e desfiado','1 xíc. de requeijão','Farinha de rosca e óleo para fritar'],
+    preparo:['Aqueça o caldo com a manteiga e adicione a farinha de uma vez, mexendo até soltar do fundo.','Sove a massa morna até ficar lisa.','Misture o frango com o requeijão para o recheio.','Modele as coxinhas, passe na farinha de rosca e frite até dourar.']}),
+  R({id:'s2',categoria:'salgadas',titulo:'Pão de queijo mineiro',emoji:'🧀',tempoMin:30,porcoes:'20 un',dificuldade:'Fácil',rating:4.9,
+    ingredientes:['500g de polvilho azedo','250ml de leite','100ml de óleo','2 ovos','200g de queijo meia cura ralado','Sal a gosto'],
+    preparo:['Ferva o leite com o óleo e o sal e escalde o polvilho.','Deixe amornar e acrescente os ovos um a um.','Junte o queijo e misture bem.','Modele bolinhas e asse a 180°C por ~25 min, até dourar.']}),
+  R({id:'s3',categoria:'salgadas',titulo:'Risoto de cogumelos',emoji:'🍚',tempoMin:35,porcoes:'4 porções',dificuldade:'Médio',rating:4.7,
+    ingredientes:['2 xíc. de arroz arbóreo','300g de cogumelos','1 cebola picada','1 taça de vinho branco','1L de caldo de legumes','Queijo parmesão e manteiga'],
+    preparo:['Refogue a cebola e os cogumelos na manteiga.','Adicione o arroz e o vinho, mexendo até evaporar.','Acrescente o caldo quente em conchas, mexendo sempre.','Finalize com parmesão e manteiga gelada para dar cremosidade.']}),
+  R({id:'s4',categoria:'salgadas',titulo:'Escondidinho de carne seca',emoji:'🥘',tempoMin:50,porcoes:'6 porções',dificuldade:'Médio',rating:4.8,
+    ingredientes:['500g de carne seca dessalgada e desfiada','1kg de mandioca cozida','1 cebola','200g de queijo coalho','Leite e manteiga para o purê'],
+    preparo:['Refogue a carne seca com a cebola.','Amasse a mandioca com leite e manteiga até virar purê.','Monte camadas: purê, carne, purê.','Cubra com queijo e gratine no forno.']}),
+  R({id:'s5',categoria:'salgadas',titulo:'Strogonoff de frango',emoji:'🍗',tempoMin:30,porcoes:'4 porções',dificuldade:'Fácil',rating:4.6,
+    ingredientes:['600g de filé de frango em cubos','1 cebola','2 col. de extrato de tomate','1 caixa de creme de leite','200g de champignon','Mostarda e ketchup'],
+    preparo:['Doure o frango temperado com a cebola.','Junte o extrato, a mostarda e o ketchup.','Adicione o champignon e cozinhe alguns minutos.','Desligue, misture o creme de leite e sirva com arroz e batata palha.']}),
+
+  R({id:'d1',categoria:'doces',titulo:'Brigadeiro gourmet',emoji:'🍫',tempoMin:20,porcoes:'25 un',dificuldade:'Fácil',rating:5.0,
+    ingredientes:['1 lata de leite condensado','3 col. de cacau em pó','1 col. de manteiga','Chocolate granulado para enrolar'],
+    preparo:['Cozinhe o leite condensado, o cacau e a manteiga em fogo médio.','Mexa sem parar até desgrudar do fundo da panela.','Despeje em um prato untado e deixe esfriar.','Enrole as bolinhas e passe no granulado.']}),
+  R({id:'d2',categoria:'doces',titulo:'Bolo de cenoura com cobertura',emoji:'🥕',tempoMin:55,porcoes:'10 fatias',dificuldade:'Fácil',rating:4.8,
+    ingredientes:['3 cenouras médias','4 ovos','1 xíc. de óleo','2 xíc. de açúcar','2,5 xíc. de farinha','1 col. de fermento','Chocolate para a cobertura'],
+    preparo:['Bata no liquidificador cenoura, ovos e óleo.','Misture com açúcar e farinha; por último o fermento.','Asse a 180°C por ~40 min.','Cubra com calda de chocolate ainda morno.']}),
+  R({id:'d3',categoria:'doces',titulo:'Pudim de leite condensado',emoji:'🍮',tempoMin:60,porcoes:'8 porções',dificuldade:'Médio',rating:4.9,
+    ingredientes:['1 lata de leite condensado','2 latas de leite','3 ovos','1 xíc. de açúcar para a calda'],
+    preparo:['Faça a calda derretendo o açúcar até dourar e forre a forma.','Bata os demais ingredientes no liquidificador.','Despeje na forma e asse em banho-maria por ~1h.','Leve à geladeira e desenforme gelado.']}),
+  R({id:'d4',categoria:'doces',titulo:'Mousse de maracujá',emoji:'🥭',tempoMin:15,porcoes:'6 porções',dificuldade:'Fácil',rating:4.7,
+    ingredientes:['1 lata de leite condensado','1 lata de creme de leite','1 xíc. de suco concentrado de maracujá','Polpa de maracujá para decorar'],
+    preparo:['Bata o leite condensado, o creme de leite e o suco.','Distribua em taças.','Decore com a polpa.','Leve à geladeira por 2h antes de servir.']}),
+  R({id:'d5',categoria:'doces',titulo:'Cupcake red velvet',emoji:'🧁',tempoMin:40,porcoes:'12 un',dificuldade:'Fácil',rating:4.6,
+    ingredientes:['1,5 xíc. de farinha','1 col. de cacau','1 xíc. de açúcar','1 ovo','120ml de buttermilk','Corante vermelho','Cream cheese para a cobertura'],
+    preparo:['Misture os secos e os úmidos separadamente, depois junte.','Adicione o corante até a cor desejada.','Asse a 180°C por ~18 min.','Cubra com chantilly de cream cheese.']}),
+
+  R({id:'b1',categoria:'bebidas',titulo:'Suco verde detox',emoji:'🥤',tempoMin:5,porcoes:'2 copos',dificuldade:'Fácil',rating:4.5,
+    ingredientes:['1 folha de couve','1 maçã verde','Suco de 1 limão','1 pedaço de gengibre','300ml de água de coco'],
+    preparo:['Bata tudo no liquidificador.','Coe se preferir.','Sirva gelado na hora.']}),
+  R({id:'b2',categoria:'bebidas',titulo:'Café gelado cremoso',emoji:'☕',tempoMin:10,porcoes:'2 copos',dificuldade:'Fácil',rating:4.7,
+    ingredientes:['200ml de café forte gelado','2 col. de leite condensado','200ml de leite','Gelo a gosto'],
+    preparo:['Bata o café com o leite condensado até espumar.','Encha os copos com gelo e leite.','Despeje o creme de café por cima.']}),
+  R({id:'b3',categoria:'bebidas',titulo:'Limonada suíça',emoji:'🍋',tempoMin:8,porcoes:'4 copos',dificuldade:'Fácil',rating:4.6,
+    ingredientes:['2 limões com casca','1L de água gelada','4 col. de açúcar','2 col. de leite condensado','Gelo'],
+    preparo:['Corte os limões em pedaços e bata rapidamente com a água e o açúcar.','Coe bem.','Adicione o leite condensado e bata de novo.','Sirva com bastante gelo.']}),
+
+  R({id:'sa1',categoria:'saudaveis',titulo:'Bowl de quinoa e legumes',emoji:'🥗',tempoMin:20,porcoes:'2 porções',dificuldade:'Fácil',rating:4.6,
+    ingredientes:['1 xíc. de quinoa cozida','1 abobrinha em cubos','1 cenoura','Grão-de-bico','Azeite, limão e sal'],
+    preparo:['Grelhe os legumes no azeite.','Monte o bowl com a quinoa na base.','Distribua os legumes e o grão-de-bico.','Finalize com azeite e limão.']}),
+  R({id:'sa2',categoria:'saudaveis',titulo:'Panqueca de banana',emoji:'🥞',tempoMin:15,porcoes:'4 un',dificuldade:'Fácil',rating:4.7,
+    ingredientes:['2 bananas maduras','2 ovos','3 col. de aveia','Canela a gosto'],
+    preparo:['Amasse as bananas e misture com os ovos e a aveia.','Aqueça uma frigideira antiaderente.','Doure dos dois lados.','Sirva com canela e mel.']}),
+
+  R({id:'m1',categoria:'massas',titulo:'Macarrão alho e óleo',emoji:'🍝',tempoMin:20,porcoes:'3 porções',dificuldade:'Fácil',rating:4.5,
+    ingredientes:['400g de espaguete','6 dentes de alho fatiados','Azeite','Pimenta calabresa','Salsinha'],
+    preparo:['Cozinhe a massa al dente.','Doure o alho no azeite com a pimenta.','Junte a massa com um pouco da água do cozimento.','Finalize com salsinha.']}),
+  R({id:'m2',categoria:'massas',titulo:'Lasanha à bolonhesa',emoji:'🍜',tempoMin:60,porcoes:'8 porções',dificuldade:'Médio',rating:4.8,
+    ingredientes:['Massa de lasanha','500g de carne moída','Molho de tomate','Molho branco','Presunto e queijo','Parmesão'],
+    preparo:['Prepare o molho bolonhesa refogando a carne com o molho de tomate.','Monte camadas: molho, massa, presunto/queijo, molho branco.','Repita até encher a forma.','Cubra com parmesão e asse por ~35 min.']}),
+
+  R({id:'l1',categoria:'lanches',titulo:'Hambúrguer artesanal',emoji:'🍔',tempoMin:35,porcoes:'4 un',dificuldade:'Médio',rating:4.7,
+    ingredientes:['600g de carne moída (acém)','Sal e pimenta','4 pães brioche','Queijo cheddar','Alface, tomate e molho'],
+    preparo:['Tempere a carne e modele 4 discos.','Grelhe na chapa bem quente.','Derreta o cheddar sobre a carne.','Monte o lanche com os vegetais e o molho.']}),
+];
+
+// usuários de exemplo (no Firestore: coleção "usuarios"; no app real, vinculados ao Firebase Auth)
+const DIA=86400000, agora=Date.now();
+const SEED_USERS=[
+  {id:'u_admin', nome:'Maria Luiza', email:'maria@mise.app', senha:'admin123', role:'admin', status:'ativo', planoAte:null, criadoEm:agora-30*DIA},
+  {id:'u_joao',  nome:'João Pedro',  email:'joao@email.com', senha:'123456', role:'user', status:'ativo',    planoAte:agora+20*DIA, criadoEm:agora-10*DIA},
+  {id:'u_ana',   nome:'Ana Souza',   email:'ana@email.com',  senha:'123456', role:'user', status:'ativo',    planoAte:agora-3*DIA,  criadoEm:agora-25*DIA}, // plano expirado
+  {id:'u_carlos',nome:'Carlos Lima', email:'carlos@email.com',senha:'123456',role:'user',status:'suspenso', planoAte:agora+15*DIA, criadoEm:agora-5*DIA},  // suspenso
+];
+</script>
+
+<!-- =====================================================================
+     APLICAÇÃO (UI) — fala apenas com `store` (a interface RecipeStore)
+===================================================================== -->
+<script>
+let store, auth, CATS=[], view={tipo:'inicio'}, termo='';
+let usuario=null, USERS=[];
+
+async function boot(){
+  if(window.__booted) return; window.__booted=true;
+  const firebase = !!(window.FirestoreStore && window.FirebaseAuthProvider);
+  window.MODO_FIREBASE = firebase;
+  if(firebase){
+    store=new window.FirestoreStore(); await store.init();
+    auth =new window.FirebaseAuthProvider(store);
+  }else{
+    try{ store=new IndexedDBStore(); await store.init(); }
+    catch(e){ console.warn('IndexedDB indisponível, usando memória:',e); store=new MemoryStore(); }
+    auth =new LocalAuth(store);
+  }
+  // seed: no Firebase, semeia só categorias/receitas (usuários vêm do Auth)
+  try{ await store.seedIfEmpty(SEED_CATS,SEED_RECIPES, firebase?undefined:SEED_USERS); }
+  catch(e){ console.warn('Não foi possível semear os dados iniciais:',e); }
+  CATS=await store.getCategories();
+  USERS=await store.getUsers();
+  usuario=await auth.current();
+  if(usuario) startApp(); else renderLogin();
+}
+// fallback: se o módulo não rodou (ex.: file://), inicia em modo local
+window.addEventListener('load',()=>setTimeout(()=>{ if(!window.__moduleRan && !window.__booted) boot(); },0));
+
+function traduzErroAuth(err){
+  const c=(err&&err.code)||'';
+  const map={
+    'auth/invalid-email':'E-mail inválido.',
+    'auth/invalid-credential':'E-mail ou senha incorretos.',
+    'auth/wrong-password':'E-mail ou senha incorretos.',
+    'auth/user-not-found':'E-mail ou senha incorretos.',
+    'auth/email-already-in-use':'Este e-mail já está cadastrado.',
+    'auth/weak-password':'A senha precisa de pelo menos 6 caracteres.',
+    'auth/operation-not-allowed':'Ative o login por E-mail/senha no Firebase Authentication.',
+    'auth/network-request-failed':'Falha de conexão. Verifique sua internet.',
+    'auth/too-many-requests':'Muitas tentativas. Tente novamente em instantes.',
+  };
+  return map[c] || (err&&err.message) || 'Algo deu errado. Tente novamente.';
+}
+
+function startApp(){
+  $('#authgate').classList.remove('on');
+  $('.shell').style.display='';
+  renderSidebar(); render();
+}
+async function refreshSessao(){ USERS=await store.getUsers(); usuario=await auth.current(); }
+
+/* ---------- tela de login ---------- */
+function renderLogin(modo){
+  modo=modo||'entrar';
+  const g=$('#authgate'); $('.shell').style.display='none';
+  g.innerHTML=`
+    <div class="authcard">
+      <div class="brand"><span class="sq">🔪</span>Mise</div>
+      <div class="sub">${modo==='entrar'?'Entre para acessar suas receitas.':'Crie sua conta para começar a cozinhar.'}</div>
+      <div class="authtabs">
+        <button data-modo="entrar" class="${modo==='entrar'?'on':''}">Entrar</button>
+        <button data-modo="criar" class="${modo==='criar'?'on':''}">Criar conta</button>
+      </div>
+      <div class="autherr" id="autherr"></div>
+      ${modo==='criar'?`<div class="field"><label>Nome</label><input id="a_nome" placeholder="Seu nome"></div>`:''}
+      <div class="field"><label>E-mail</label><input id="a_email" type="email" placeholder="email@exemplo.com" autocomplete="username"></div>
+      <div class="field"><label>Senha</label><input id="a_senha" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="bacc" id="a_go">${modo==='entrar'?'Entrar':'Criar conta e entrar'}</button>
+      ${(modo==='entrar' && !window.MODO_FIREBASE)?`
+        <div class="demoaccts">
+          <div class="t">Contas de demonstração (clique para entrar)</div>
+          <div class="da">
+            <button data-demo="maria@mise.app">Maria<small>admin</small></button>
+            <button data-demo="joao@email.com">João<small>ativo</small></button>
+            <button data-demo="ana@email.com">Ana<small>expirado</small></button>
+            <button data-demo="carlos@email.com">Carlos<small>suspenso</small></button>
+          </div>
+        </div>`:''}
+    </div>`;
+  g.classList.add('on');
+  g.querySelectorAll('[data-modo]').forEach(b=>b.onclick=()=>renderLogin(b.dataset.modo));
+  g.querySelectorAll('[data-demo]').forEach(b=>b.onclick=()=>fazerLogin(b.dataset.demo, b.dataset.demo==='maria@mise.app'?'admin123':'123456').catch(err=>erro(traduzErroAuth(err))));
+  const erro=msg=>{const e=$('#autherr');e.textContent=msg;e.classList.add('on');};
+  $('#a_go').onclick=async()=>{
+    $('#autherr').classList.remove('on');
+    try{
+      if(modo==='entrar'){ await fazerLogin($('#a_email').value, $('#a_senha').value); }
+      else{ usuario=await auth.signup({nome:$('#a_nome').value, email:$('#a_email').value, senha:$('#a_senha').value});
+        USERS=await store.getUsers(); toast('Conta criada! Bem-vindo 🎉'); startApp(); }
+    }catch(err){ erro(traduzErroAuth(err)); }
+  };
+  g.querySelectorAll('input').forEach(inp=>inp.addEventListener('keydown',e=>{if(e.key==='Enter')$('#a_go').click();}));
+  setTimeout(()=>$('#a_email')?.focus(),60);
+}
+async function fazerLogin(email,senha){
+  usuario=await auth.login(email,senha);
+  USERS=await store.getUsers();
+  startApp();
+}
+async function logout(){ await auth.logout(); usuario=null; view={tipo:'inicio'}; termo=''; renderLogin('entrar'); }
+
+const planoVigente=u=>!!(u&&u.planoAte&&u.planoAte>Date.now());
+function cap(){
+  const u=usuario||{};
+  const admin=u.role==='admin';
+  const ativo=u.status==='ativo';
+  return {
+    admin,
+    ativo,
+    planoVigente: planoVigente(u),
+    podeIncluir: admin || (ativo && planoVigente(u)),   // criar receita
+    podeImagem: admin,                                   // imagens só admin (custo de Storage)
+    gereTudo: admin,                                     // editar/excluir qualquer receita + usuários
+  };
+}
+const ehDono=r=>usuario && r && r.autorId===usuario.id;
+const podeEditarReceita=r=>{ const c=cap(); return c.gereTudo || ehDono(r); };
+function fmtData(ts){ return ts?new Date(ts).toLocaleDateString('pt-BR'):'—'; }
+function diasRestantes(ts){ return Math.ceil((ts-Date.now())/86400000); }
+
+const $=s=>document.querySelector(s);
+const el=(h)=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstChild;};
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const catBy=slug=>CATS.find(c=>c.slug===slug)||{nome:'—',emoji:'🍽️',grad:'#222'};
+
+/* ---------- sidebar ---------- */
+async function renderSidebar(){
+  const counts={};
+  for(const c of CATS) counts[c.slug]=(await store.getRecipes({categoria:c.slug})).length;
+  const favs=(await store.getRecipes({favoritas:true})).length;
+  const c=cap();
+  const navItem=(tipo,slug,emoji,label,count)=>`
+    <button class="nlink ${view.tipo===tipo&&view.slug===slug?'on':''}" data-nav="${tipo}" data-slug="${slug||''}">
+      <span class="e">${emoji}</span>${label}${count!=null?`<span class="ct">${count}</span>`:''}</button>`;
+
+  const u=usuario||{nome:'—',role:'user',status:'ativo'};
+  const ini=(u.nome||'?').trim()[0]||'?';
+  const badge = c.admin ? '<span class="rb adm">Admin</span>'
+    : u.status==='suspenso' ? '<span class="rb sus">Suspenso</span>'
+    : c.planoVigente ? '<span class="rb ok">Ativo</span>'
+    : '<span class="rb exp">Expirado</span>';
+  const sub = c.admin ? 'Administrador'
+    : u.status==='suspenso' ? 'Acesso suspenso'
+    : c.planoVigente ? ('Plano até '+fmtData(u.planoAte))
+    : 'Sem plano ativo';
+
+  $('#sidebar').innerHTML=`
+    <div class="logo"><span class="sq">🔪</span>Mise</div>
+    <div class="navlbl">Menu</div>
+    ${navItem('inicio',null,'🏠','Início')}
+    ${navItem('populares',null,'🔥','Populares')}
+    ${navItem('salvas',null,'🔖','Salvas',favs)}
+    ${c.admin?navItem('admin',null,'🛡️','Administração'):''}
+    <div class="navlbl">Categorias</div>
+    ${CATS.map(cc=>navItem('categoria',cc.slug,cc.emoji,cc.nome,counts[cc.slug])).join('')}
+    <div class="profile">
+      <div class="av">${esc(ini.toUpperCase())}</div>
+      <div style="min-width:0;flex:1">
+        <b>${esc(u.nome)} ${badge}</b>
+        <span>${esc(sub)}</span>
+      </div>
+    </div>
+    <button class="logoutbtn" id="btnLogout">↩ Sair</button>`;
+
+  $('#sidebar').querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>{
+    view={tipo:b.dataset.nav,slug:b.dataset.slug||undefined}; termo=''; $('#search').value='';
+    renderSidebar(); render(); window.scrollTo({top:0,behavior:'smooth'});
+  });
+  const lo=$('#btnLogout'); if(lo) lo.onclick=logout;
+}
+
+/* ---------- helpers de medida / escala ---------- */
+function fmtQtd(n){
+  const r=Math.round(n*100)/100;
+  let s=Number.isInteger(r)?String(r):r.toFixed(2).replace(/0+$/,'').replace(/\.$/,'');
+  return s.replace('.',',');
+}
+// separa "500g de farinha" -> {qtd:"500", gap:"", resto:"g de farinha"}
+function partesIngrediente(linha){
+  const m=String(linha).match(/^\s*(\d+(?:[.,]\d+)?(?:\/\d+)?)(\s*)(.*)$/);
+  if(!m) return null;
+  return {raw:m[1],gap:m[2],resto:m[3]};
+}
+function valorNum(raw){
+  if(raw.includes('/')){const[a,b]=raw.split('/');return parseFloat(a)/parseFloat(b);}
+  return parseFloat(raw.replace(',','.'));
+}
+// devolve {qtdHTML, texto} já escalado pelo fator
+function escalaIngrediente(linha,fator){
+  const p=partesIngrediente(linha);
+  if(!p||fator===1){
+    if(p) return {qtd:`${p.raw}${p.gap}`,resto:p.resto};
+    return {qtd:'',resto:String(linha)};
+  }
+  const v=valorNum(p.raw);
+  if(!isFinite(v)) return {qtd:`${p.raw}${p.gap}`,resto:p.resto};
+  return {qtd:fmtQtd(v*fator)+(p.gap||(/^[a-zA-Zà-ú]/.test(p.resto)?'':' ')),resto:p.resto};
+}
+function escalaPorcoes(texto,fator){
+  if(!texto) return '';
+  if(fator===1) return texto;
+  const m=String(texto).match(/^\s*(\d+(?:[.,]\d+)?)(\s*)(.*)$/);
+  if(!m) return `${texto} (×${fmtQtd(fator)})`;
+  return fmtQtd(valorNum(m[1])*fator)+m[2]+m[3];
+}
+
+/* ---------- card ---------- */
+function cardHTML(r){
+  const c=catBy(r.categoria);
+  const img=r.imagem?`<img src="${esc(r.imagem)}" alt="" loading="lazy" onerror="this.remove()">`:'';
+  return `<article class="card" data-open="${r.id}">
+    <div class="ph" style="background:${c.grad}">${img}<span class="emoji">${r.emoji||c.emoji}</span>
+      <span class="dot">${c.nome}</span>
+      <button class="fav ${r.favorito?'on':''}" data-fav="${r.id}" title="Salvar">${r.favorito?'🔖':'🤍'}</button>
+    </div>
+    <div class="body"><h4>${esc(r.titulo)}</h4>
+      <div class="meta"><span class="pchip">⏱️ ${r.tempoMin} min</span><span class="pchip">🍽️ ${esc(r.porcoes||'')}</span><span class="pchip">⭐ ${r.rating??'–'}</span></div>
+    </div></article>`;
+}
+function bindCards(scope){
+  scope.querySelectorAll('[data-open]').forEach(c=>c.onclick=e=>{ if(e.target.closest('[data-fav]'))return; openRecipe(c.dataset.open); });
+  scope.querySelectorAll('[data-fav]').forEach(b=>b.onclick=async e=>{
+    e.stopPropagation(); await store.toggleFavorite(b.dataset.fav);
+    renderSidebar(); render();
+  });
+}
+
+/* ---------- render principal ---------- */
+function bannerHTML(){
+  const c=cap();
+  if(c.admin) return '';
+  if((usuario||{}).status==='suspenso')
+    return `<div class="banner bad"><span class="bi">⛔</span><div>Seu acesso está <b>suspenso</b>. Você pode navegar, mas não incluir receitas. Fale com o administrador para reativar.</div></div>`;
+  if(!c.planoVigente)
+    return `<div class="banner warn"><span class="bi">⏳</span><div>Seu plano está <b>expirado</b>. A inclusão de receitas fica bloqueada até a renovação do acesso.</div></div>`;
+  return '';
+}
+function atualizaAddBtn(){
+  const b=$('#btnAdd'); if(!b)return; const c=cap();
+  b.style.opacity=c.podeIncluir?'1':'.5';
+  b.title=c.podeIncluir?'':'Acesso necessário para incluir receitas';
+}
+
+async function render(){
+  const content=$('#content'); const title=$('#pageTitle');
+  const primeiro=(usuario?.nome||'').split(' ')[0]||'Olá';
+  atualizaAddBtn();
+  // título dinâmico
+  if(view.tipo==='inicio') title.innerHTML=`Olá, ${esc(primeiro)} 👋 <span>o que vamos cozinhar?</span>`;
+  else if(view.tipo==='populares') title.innerHTML='Populares <span>as mais bem avaliadas</span>';
+  else if(view.tipo==='salvas') title.innerHTML='Salvas <span>suas favoritas</span>';
+  else if(view.tipo==='admin') title.innerHTML='Administração <span>usuários e acessos</span>';
+  else title.innerHTML=`${catBy(view.slug).nome} <span>receitas da categoria</span>`;
+
+  if(view.tipo==='admin'){ return renderAdmin(content); }
+
+  const banner=bannerHTML();
+
+  // busca tem prioridade
+  if(termo){
+    const res=await store.getRecipes({busca:termo});
+    content.innerHTML=banner+`<div class="row"><h3>Resultados para “${esc(termo)}”</h3><a id="clr">limpar</a></div>
+      ${res.length?`<div class="grid">${res.map(cardHTML).join('')}</div>`:emptyHTML('Nada encontrado','Tente outro nome ou ingrediente.')}`;
+    $('#clr').onclick=()=>{termo='';$('#search').value='';render();};
+    bindCards(content); return;
+  }
+
+  if(view.tipo==='inicio'){
+    const st=await store.stats();
+    const todas=await store.getRecipes();
+    const destaque=todas.find(r=>r.id==='s3')||todas[0];
+    const c=destaque?catBy(destaque.categoria):null;
+    let html=banner+`<div class="feat">
+      <div class="feature" ${destaque?`data-open="${destaque.id}"`:''} style="${destaque&&destaque.imagem?`background:linear-gradient(180deg,rgba(8,11,18,.15),rgba(8,11,18,.78)),url('${esc(destaque.imagem)}') center/cover`:`background:radial-gradient(130% 120% at 80% 10%,var(--feat-a),var(--feat-b) 60%,var(--bg))`}">
+        <div class="g">${destaque&&!destaque.imagem?destaque.emoji:(destaque?'':'🍲')}</div>
+        <span class="k">Receita do dia</span>
+        <h2>${destaque?esc(destaque.titulo):'Comece adicionando receitas'}</h2>
+        ${destaque?`<span class="go">Ver receita →</span>`:''}
+      </div>
+      <div class="statwrap">
+        <div class="stat"><div class="n"><em>${st.total}</em></div><span>receitas disponíveis</span></div>
+        <div class="stat"><div class="n">⏱️ <em>${st.tempoMedio}</em>min</div><span>tempo médio de preparo</span></div>
+      </div></div>`;
+    // seções por categoria (com itens)
+    for(const cat of CATS){
+      const items=(await store.getRecipes({categoria:cat.slug})).slice(0,3);
+      if(!items.length) continue;
+      html+=`<div class="row"><h3>${cat.emoji} ${cat.nome}</h3><a data-go="${cat.slug}">Ver todas →</a></div>
+        <div class="grid">${items.map(cardHTML).join('')}</div>`;
+    }
+    content.innerHTML=html;
+    content.querySelectorAll('[data-go]').forEach(a=>a.onclick=()=>{view={tipo:'categoria',slug:a.dataset.go};renderSidebar();render();});
+    const f=content.querySelector('.feature[data-open]'); if(f) f.onclick=()=>openRecipe(f.dataset.open);
+    bindCards(content); return;
+  }
+
+  // listas (categoria / populares / salvas)
+  let list;
+  if(view.tipo==='categoria') list=await store.getRecipes({categoria:view.slug});
+  else if(view.tipo==='salvas') list=await store.getRecipes({favoritas:true});
+  else list=(await store.getRecipes()).sort((a,b)=>(b.rating||0)-(a.rating||0));
+
+  if(!list.length){
+    content.innerHTML = banner + (view.tipo==='salvas'
+      ? emptyHTML('Nenhuma receita salva','Toque no 🤍 de uma receita para salvá-la aqui.')
+      : emptyHTML('Categoria vazia','Adicione a primeira receita com o botão “Nova receita”.'));
+    return;
+  }
+  content.innerHTML=banner+`<div class="grid">${list.map(cardHTML).join('')}</div>`;
+  bindCards(content);
+}
+function emptyHTML(t,s){return `<div class="empty"><div class="ico">🍳</div><b>${t}</b>${s}</div>`;}
+
+/* ---------- painel de administração ---------- */
+async function renderAdmin(content){
+  if(!cap().admin){ content.innerHTML=emptyHTML('Acesso restrito','Esta área é exclusiva de administradores.'); return; }
+  USERS=await store.getUsers();
+  const total=USERS.length;
+  const ativos=USERS.filter(u=>u.role==='admin'||(u.status==='ativo'&&planoVigente(u))).length;
+  const suspensos=USERS.filter(u=>u.status==='suspenso').length;
+  const expirados=USERS.filter(u=>u.role!=='admin'&&u.status==='ativo'&&!planoVigente(u)).length;
+
+  const linha=u=>{
+    const ini=(u.nome||'?').trim()[0].toUpperCase();
+    const ehAdmin=u.role==='admin';
+    const vig=planoVigente(u);
+    const statusTag = u.status==='suspenso' ? '<span class="tag sus">⛔ Suspenso</span>'
+      : ehAdmin ? '<span class="tag adm">🛡️ Admin</span>'
+      : vig ? '<span class="tag ok">✓ Ativo</span>' : '<span class="tag exp">⏳ Expirado</span>';
+    const acesso = ehAdmin ? 'Total (admin)'
+      : u.planoAte ? (vig?`${diasRestantes(u.planoAte)} dia(s) · até ${fmtData(u.planoAte)}`:`Expirou em ${fmtData(u.planoAte)}`)
+      : 'Sem plano';
+    const eu = usuario && u.id===usuario.id;
+    return `<tr>
+      <td><div class="uname"><div class="av">${esc(ini)}</div><div><b>${esc(u.nome)}${eu?' (você)':''}</b><span>${esc(u.email||'')}</span></div></div></td>
+      <td>${statusTag}</td>
+      <td>${esc(acesso)}</td>
+      <td><div class="uacts">
+        ${u.status==='suspenso'
+          ? `<button data-act="reativar" data-id="${u.id}">Reativar</button>`
+          : `<button data-act="suspender" data-id="${u.id}" ${ehAdmin?'disabled style="opacity:.4"':''}>Suspender</button>`}
+        <button data-act="acesso" data-id="${u.id}" ${ehAdmin?'disabled style="opacity:.4"':''}>Conceder acesso</button>
+        <div class="menu">
+          <button data-act="mais" data-id="${u.id}">⋯</button>
+          <div class="pop" data-pop="${u.id}">
+            <button data-act="+7" data-id="${u.id}">+ 7 dias</button>
+            <button data-act="+30" data-id="${u.id}">+ 30 dias</button>
+            <button data-act="+90" data-id="${u.id}">+ 90 dias</button>
+            <button data-act="remacesso" data-id="${u.id}">Remover acesso</button>
+            <button data-act="role" data-id="${u.id}">${ehAdmin?'Tornar usuário':'Tornar admin'}</button>
+            <button class="danger" data-act="excluir" data-id="${u.id}" ${eu?'disabled style="opacity:.4"':''}>Excluir usuário</button>
+          </div>
+        </div>
+      </div></td>
+    </tr>`;
+  };
+
+  content.innerHTML=`
+    <div class="adminhead">
+      <button class="addbtn" id="btnNewUser">＋ Novo usuário</button>
+      <div class="kpi">
+        <div class="box"><b>${total}</b>usuários</div>
+        <div class="box"><b>${ativos}</b>com acesso</div>
+        <div class="box"><b>${expirados}</b>expirados</div>
+        <div class="box"><b>${suspensos}</b>suspensos</div>
+      </div>
+    </div>
+    <table class="utable">
+      <thead><tr><th>Usuário</th><th>Situação</th><th>Acesso</th><th style="text-align:right">Ações</th></tr></thead>
+      <tbody>${USERS.map(linha).join('')}</tbody>
+    </table>
+    <p style="color:var(--mut2);font-size:12.5px;margin-top:16px;line-height:1.6">
+      🔒 Importante: no app publicado, estas permissões precisam ser garantidas pelas
+      <b>Regras de Segurança do Firestore</b> + <b>Firebase Auth</b> (custom claims de admin).
+      As verificações aqui no navegador são só para a interface — não substituem a segurança no servidor.
+    </p>`;
+
+  // ações
+  content.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>acaoAdmin(b.dataset.act,b.dataset.id,b));
+  $('#btnNewUser').onclick=()=>openUserForm();
+}
+
+async function acaoAdmin(act,id,btn){
+  if(act==='mais'){
+    const pop=document.querySelector(`[data-pop="${id}"]`);
+    document.querySelectorAll('.pop.on').forEach(p=>{if(p!==pop)p.classList.remove('on');});
+    pop.classList.toggle('on'); return;
+  }
+  const u=await store.getUser(id); if(!u)return;
+  const base=Math.max(Date.now(), u.planoAte||0);
+  if(act==='suspender'){ u.status='suspenso'; await store.saveUser(u); toast('Usuário suspenso'); }
+  else if(act==='reativar'){ u.status='ativo'; await store.saveUser(u); toast('Acesso reativado'); }
+  else if(act==='acesso'||act==='+30'){ u.status='ativo'; u.planoAte=base+30*86400000; await store.saveUser(u); toast('Acesso concedido (+30 dias)'); }
+  else if(act==='+7'){ u.status='ativo'; u.planoAte=base+7*86400000; await store.saveUser(u); toast('+7 dias de acesso'); }
+  else if(act==='+90'){ u.status='ativo'; u.planoAte=base+90*86400000; await store.saveUser(u); toast('+90 dias de acesso'); }
+  else if(act==='remacesso'){ u.planoAte=null; await store.saveUser(u); toast('Acesso removido'); }
+  else if(act==='role'){ u.role=u.role==='admin'?'user':'admin'; await store.saveUser(u); toast(u.role==='admin'?'Promovido a admin':'Agora é usuário'); }
+  else if(act==='excluir'){ if(!confirm(`Excluir o usuário ${u.nome}?`))return; await store.deleteUser(id); toast('Usuário excluído'); }
+  await refreshSessao(); renderSidebar();
+  const c=$('#content'); renderAdmin(c);
+}
+
+function openUserForm(){
+  const m=el(`<div class="modal" role="dialog" aria-modal="true">
+    <div class="form-title">Novo usuário</div>
+    <div class="mscroll">
+      <div class="field"><label>Nome</label><input id="u_nome" placeholder="Nome completo"></div>
+      <div class="field"><label>E-mail</label><input id="u_email" placeholder="email@exemplo.com"></div>
+      <div class="field"><label>Senha inicial</label><input id="u_senha" type="text" placeholder="mínimo 6 caracteres" value="123456"></div>
+      <div class="frow">
+        <div class="field"><label>Papel</label><select id="u_role"><option value="user">Usuário</option><option value="admin">Administrador</option></select></div>
+        <div class="field" style="grid-column:span 2"><label>Conceder acesso por</label><select id="u_dias"><option value="0">Sem acesso</option><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option></select></div>
+      </div>
+      <div class="help" style="color:var(--mut2)">No app real, o usuário também precisa de uma conta no Firebase Auth (e-mail/senha ou provedor). Aqui criamos o perfil já com uma senha de acesso.</div>
+    </div>
+    <div class="mfoot"><button class="bsoft" data-close>Cancelar</button><span class="grow"></span><button class="bacc" data-save>Criar usuário</button></div>
+  </div>`);
+  m.querySelector('[data-close]').onclick=closeOverlay;
+  m.querySelector('[data-save]').onclick=async()=>{
+    const nome=m.querySelector('#u_nome').value.trim();
+    if(!nome){const t=m.querySelector('#u_nome');t.focus();t.style.borderColor='#ff8a8a';return;}
+    const dias=+m.querySelector('#u_dias').value;
+    await store.saveUser({nome, email:m.querySelector('#u_email').value.trim(), senha:m.querySelector('#u_senha').value.trim()||'123456', role:m.querySelector('#u_role').value,
+      status:'ativo', planoAte: dias?Date.now()+dias*86400000:null});
+    closeOverlay(); toast('Usuário criado'); USERS=await store.getUsers(); renderSidebar(); renderAdmin($('#content'));
+  };
+  showOverlay(m); setTimeout(()=>m.querySelector('#u_nome')?.focus(),60);
+}
+
+/* ---------- detalhe ---------- */
+async function openRecipe(id){
+  const r=await store.getRecipe(id); if(!r)return; const c=catBy(r.categoria);
+  let fator=1;
+  const presets=[['½×',0.5],['1×',1],['2×',2],['3×',3]];
+  const himg=r.imagem?`<img class="himg" src="${esc(r.imagem)}" alt="" onerror="this.remove()"><div class="hov"></div>`:'';
+  const m=el(`<div class="modal" role="dialog" aria-modal="true">
+    <div class="mhead" style="background:${c.grad}">
+      ${himg}
+      <div class="g">${r.imagem?'':(r.emoji||c.emoji)}</div>
+      <span class="dot">${c.nome}</span>
+      <button class="mclose" data-close>✕</button>
+    </div>
+    <div class="mscroll">
+      <h2>${esc(r.titulo)}</h2>
+      <div class="mmeta">
+        <span class="pchip">⏱️ ${r.tempoMin} min</span>
+        <span class="pchip" data-porc>🍽️ ${esc(r.porcoes||'')}</span>
+        <span class="pchip">🔥 ${esc(r.dificuldade||'')}</span>
+        <span class="pchip">⭐ ${r.rating??'–'}</span>
+      </div>
+      <div class="scaler">
+        <span class="lab">Ajustar quantidade <b data-fl>1×</b></span>
+        <div class="pm"><button data-dec aria-label="Diminuir">−</button><span class="val" data-fv>1×</span><button data-inc aria-label="Aumentar">＋</button></div>
+        <div class="steps">${presets.map(([t,v])=>`<button data-set="${v}" class="${v===1?'on':''}">${t}</button>`).join('')}</div>
+      </div>
+      <div class="mblock"><h5>Ingredientes</h5><ul data-ing>${(r.ingredientes||[]).map(i=>`<li><span class="b">◆</span><span></span></li>`).join('')}</ul></div>
+      <div class="mblock"><h5>Modo de preparo</h5><ol>${(r.preparo||[]).map(p=>`<li><span>${esc(p)}</span></li>`).join('')}</ol></div>
+    </div>
+    <div class="mfoot">
+      <button class="bsoft" data-favm>${r.favorito?'🔖 Salva':'🤍 Salvar'}</button>
+      ${podeEditarReceita(r)?'<button class="bsoft" data-edit>✏️ Editar</button>':''}
+      <span class="grow"></span>
+      ${podeEditarReceita(r)?'<button class="bsoft bdanger" data-del>🗑 Excluir</button>':''}
+    </div></div>`);
+
+  const ingEls=[...m.querySelector('[data-ing]').children];
+  function pinta(){
+    (r.ingredientes||[]).forEach((linha,i)=>{
+      const {qtd,resto}=escalaIngrediente(linha,fator);
+      ingEls[i].querySelector('span:last-child').innerHTML=
+        (qtd?`<span class="q">${esc(qtd)}</span>`:'')+esc(resto);
+    });
+    m.querySelector('[data-porc]').innerHTML='🍽️ '+esc(escalaPorcoes(r.porcoes||'',fator));
+    const ft=fmtQtd(fator)+'×';
+    m.querySelector('[data-fl]').textContent=ft;
+    m.querySelector('[data-fv]').textContent=ft;
+    m.querySelectorAll('[data-set]').forEach(b=>b.classList.toggle('on',+b.dataset.set===fator));
+  }
+  m.querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{fator=+b.dataset.set;pinta();});
+  m.querySelector('[data-inc]').onclick=()=>{fator=Math.min(10,Math.round((fator+0.5)*10)/10);pinta();};
+  m.querySelector('[data-dec]').onclick=()=>{fator=Math.max(0.5,Math.round((fator-0.5)*10)/10);pinta();};
+  pinta();
+
+  m.querySelector('[data-close]').onclick=closeOverlay;
+  m.querySelector('[data-favm]').onclick=async ev=>{const on=await store.toggleFavorite(id);ev.target.textContent=on?'🔖 Salva':'🤍 Salvar';renderSidebar();render();};
+  const bEdit=m.querySelector('[data-edit]'); if(bEdit) bEdit.onclick=()=>{openForm(r);};
+  const bDel=m.querySelector('[data-del]'); if(bDel) bDel.onclick=async()=>{
+    if(confirm('Excluir esta receita? Esta ação não pode ser desfeita.')){
+      await store.deleteRecipe(id); closeOverlay(); toast('Receita excluída'); renderSidebar(); render();
+    }
+  };
+  showOverlay(m);
+}
+
+/* ---------- formulário criar/editar ---------- */
+function openForm(r){
+  const editing=!!(r&&r.id);
+  const c=cap();
+  // bloqueio de permissão
+  if(editing && !podeEditarReceita(r)){ toast('Você só pode editar suas próprias receitas'); return; }
+  if(!editing && !c.podeIncluir){
+    toast((usuario||{}).status==='suspenso'?'Acesso suspenso — fale com o administrador':'Acesso expirado — renove para incluir receitas');
+    return;
+  }
+  const podeImg = c.podeImagem; // imagens só para admin (custo de Storage)
+  const opts=CATS.map(cc=>`<option value="${cc.slug}" ${r&&r.categoria===cc.slug?'selected':''}>${cc.emoji} ${cc.nome}</option>`).join('');
+  const campoImagem = podeImg
+    ? `<div class="field"><label>Imagem (link)</label>
+        <input id="f_img" value="${editing?esc(r.imagem||''):''}" placeholder="https://… cole o endereço de uma foto">
+        <div class="help">Cole o link de uma imagem da web. Deixe em branco para usar o ícone.</div>
+        <div class="imgprev" id="f_prev"><img id="f_previmg" alt=""></div>
+      </div>`
+    : `<div class="field"><label>Imagem</label>
+        <div class="help" style="color:var(--mut2)">🔒 Adicionar imagem é um recurso de administrador. Sua receita usará o ícone da categoria.</div>
+      </div>`;
+  const m=el(`<div class="modal" role="dialog" aria-modal="true">
+    <div class="form-title">${editing?'Editar receita':'Nova receita'}</div>
+    <div class="mscroll">
+      <div class="field"><label>Título</label><input id="f_titulo" value="${editing?esc(r.titulo):''}" placeholder="Ex.: Bolo de fubá cremoso"></div>
+      <div class="field"><label>Categoria</label><select id="f_cat">${opts}</select></div>
+      <div class="frow">
+        <div class="field"><label>Tempo (min)</label><input id="f_tempo" type="number" min="1" value="${editing?r.tempoMin:''}" placeholder="30"></div>
+        <div class="field"><label>Porções</label><input id="f_porc" value="${editing?esc(r.porcoes||''):''}" placeholder="4 porções"></div>
+        <div class="field"><label>Dificuldade</label><select id="f_dif">
+          ${['Fácil','Médio','Difícil'].map(d=>`<option ${editing&&r.dificuldade===d?'selected':''}>${d}</option>`).join('')}
+        </select></div>
+      </div>
+      ${campoImagem}
+      <div class="field"><label>Emoji (opcional)</label><input id="f_emoji" maxlength="4" value="${editing?esc(r.emoji||''):''}" placeholder="🍰"></div>
+      <div class="field"><label>Ingredientes</label><textarea id="f_ing" placeholder="Ex.: 500g de farinha">${editing?esc((r.ingredientes||[]).join('\n')):''}</textarea><div class="help">Um por linha, com a medida na frente: <b>500g de farinha</b> · <b>2 colheres de açúcar</b> · <b>1 xícara de leite</b>. Assim o app recalcula ao mudar a porção.</div></div>
+      <div class="field"><label>Modo de preparo</label><textarea id="f_prep" placeholder="Um passo por linha">${editing?esc((r.preparo||[]).join('\n')):''}</textarea><div class="help">Um passo por linha.</div></div>
+    </div>
+    <div class="mfoot">
+      <button class="bsoft" data-close>Cancelar</button><span class="grow"></span>
+      <button class="bacc" data-save>${editing?'Salvar alterações':'Adicionar receita'}</button>
+    </div></div>`);
+  // prévia da imagem (só quando o campo existe)
+  const inputImg=m.querySelector('#f_img');
+  if(inputImg){
+    const prev=m.querySelector('#f_prev'), prevImg=m.querySelector('#f_previmg');
+    const atualizaPrev=()=>{
+      const u=inputImg.value.trim();
+      if(!u){prev.classList.remove('on');return;}
+      prevImg.onerror=()=>prev.classList.remove('on');
+      prevImg.onload=()=>prev.classList.add('on');
+      prevImg.src=u;
+    };
+    inputImg.addEventListener('input',atualizaPrev); atualizaPrev();
+  }
+
+  m.querySelector('[data-close]').onclick=closeOverlay;
+  m.querySelector('[data-save]').onclick=async()=>{
+    const titulo=m.querySelector('#f_titulo').value.trim();
+    if(!titulo){ const t=m.querySelector('#f_titulo'); t.focus(); t.style.borderColor='#ff8a8a'; return; }
+    const rec={
+      id: editing?r.id:undefined, favorito: editing?r.favorito:false, criadoEm: editing?r.criadoEm:undefined,
+      autorId: editing?(r.autorId||null):(usuario?usuario.id:null),
+      titulo, categoria:m.querySelector('#f_cat').value, emoji:m.querySelector('#f_emoji').value.trim(),
+      imagem: inputImg?inputImg.value.trim():(editing?(r.imagem||''):''),
+      tempoMin:+m.querySelector('#f_tempo').value||0, porcoes:m.querySelector('#f_porc').value.trim(), dificuldade:m.querySelector('#f_dif').value,
+      rating: editing?r.rating:5.0,
+      ingredientes:m.querySelector('#f_ing').value.split('\n').map(s=>s.trim()).filter(Boolean),
+      preparo:m.querySelector('#f_prep').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    };
+    await store.saveRecipe(rec); closeOverlay(); toast(editing?'Receita atualizada':'Receita adicionada ✨');
+    renderSidebar(); render();
+  };
+  showOverlay(m);
+  setTimeout(()=>m.querySelector('#f_titulo')?.focus(),60);
+}
+
+/* ---------- overlay / toast ---------- */
+let overlayTimer;
+function showOverlay(node){clearTimeout(overlayTimer);const o=$('#overlay');o.innerHTML='';o.appendChild(node);o.classList.add('on');}
+function closeOverlay(){clearTimeout(overlayTimer);$('#overlay').classList.remove('on');overlayTimer=setTimeout(()=>$('#overlay').innerHTML='',180);}
+$('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay'))closeOverlay();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeOverlay();});
+let tT; function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
+
+/* ---------- busca ---------- */
+let sT; $('#search').addEventListener('input',e=>{clearTimeout(sT);sT=setTimeout(()=>{termo=e.target.value.trim();render();},180);});
+$('#btnAdd').onclick=()=>openForm();
+document.addEventListener('click',e=>{ if(!e.target.closest('.menu')) document.querySelectorAll('.pop.on').forEach(p=>p.classList.remove('on')); });
+
+// expõe boot() para o carregador de módulo iniciar o app (Firebase ou local)
+window.boot = boot;
+</script>
+</body>
+</html>
