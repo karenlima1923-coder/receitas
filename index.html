@@ -2006,17 +2006,19 @@ async function openRecipe(id){
   m.querySelector('[data-favm]').onclick=async ev=>{const on=await store.toggleFavorite(id);ev.target.textContent=on?'🔖 Salva':'🤍 Salvar';renderSidebar();render();};
   const bEdit=m.querySelector('[data-edit]'); if(bEdit) bEdit.onclick=()=>{openForm(r);};
   const bDel=m.querySelector('[data-del]'); if(bDel) bDel.onclick=async()=>{
-    // Exibe a janela de confirmação nativa para PC e Celular
-    if (!confirm(`Tem certeza que deseja excluir "${r.titulo}"?\nEsta ação não poderá ser desfeita.`)) {
-      return; // Se o usuário clicar em "Cancelar", para por aqui e não exclui
-    }
+    // Invoca o nosso modal bonitão e aguarda a resposta do usuário
+    const querExcluir = await confirmModal(
+      'Excluir receita?', 
+      `Tem certeza que deseja excluir "${r.titulo}"?\nEsta ação não poderá ser desfeita.`
+    );
+    if (!querExcluir) return; // Se clicou em cancelar, para aqui.
     
     await store.deleteRecipe(id); 
     closeOverlay(); 
     await logAtividade('excluiu receita', r.titulo);
     renderSidebar(); 
     render();
-    toast('Receita excluída'); // Troca o "Desfazer" por um aviso simples de sucesso
+    toast('Receita excluída');
   };
   // ações novas
   m.querySelector('[data-cook]').onclick=()=>abrirModoCozinhar(r,fator);
@@ -2342,6 +2344,48 @@ function closeOverlay(){clearTimeout(overlayTimer);const o=$('#overlay');o.class
 $('#overlay').addEventListener('click',e=>{if(e.target===$('#overlay') && $('#overlay').dataset.persist!=='1')closeOverlay();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape' && $('#overlay').dataset.persist!=='1')closeOverlay();});
 let tT; function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),2200);}
+
+/* ---------- modal de confirmação customizado ---------- */
+function confirmModal(titulo, mensagem, btnConfirma = 'Excluir') {
+  return new Promise((resolve) => {
+    // Cria o fundo escuro desfocado
+    const bg = document.createElement('div');
+    bg.style.cssText = 'position:fixed;inset:0;background:rgba(4,6,10,.8);backdrop-filter:blur(4px);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:.2s';
+    
+    // Cria a caixinha do modal com o layout do seu app
+    bg.innerHTML = `
+      <div class="modal" style="max-width:400px;transform:translateY(15px);transition:.2s;border:1px solid var(--line);box-shadow:0 30px 60px -20px #000">
+        <div class="mscroll" style="padding:26px 24px 16px">
+          <h2 style="font-family:'Sora';font-weight:700;font-size:20px;margin-bottom:12px">${esc(titulo)}</h2>
+          <p style="font-size:14.5px;color:#cdd6dd;line-height:1.5">${esc(mensagem).replace(/\n/g, '<br>')}</p>
+        </div>
+        <div class="mfoot" style="justify-content:flex-end;padding:16px 24px;border-top:none;background:transparent">
+          <button class="bsoft" id="c_cancel">Cancelar</button>
+          <button class="bsoft bdanger" id="c_conf" style="background:rgba(255,90,90,.12);border-color:rgba(255,90,90,.35)">${esc(btnConfirma)}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(bg);
+    
+    // Faz a animação de entrada suave
+    requestAnimationFrame(() => {
+      bg.style.opacity = '1';
+      bg.querySelector('.modal').style.transform = 'translateY(0)';
+    });
+
+    // Função para fechar e dar a resposta (Sim ou Não)
+    const fechar = (res) => {
+      bg.style.opacity = '0';
+      bg.querySelector('.modal').style.transform = 'translateY(15px)';
+      setTimeout(() => bg.remove(), 200);
+      resolve(res); // Retorna true (excluir) ou false (cancelar)
+    };
+
+    bg.querySelector('#c_cancel').onclick = () => fechar(false);
+    bg.querySelector('#c_conf').onclick = () => fechar(true);
+    bg.onclick = (e) => { if(e.target === bg) fechar(false); };
+  });
+}
 
 /* ---------- busca ---------- */
 let sT; $('#search').addEventListener('input',e=>{clearTimeout(sT);sT=setTimeout(()=>{resetSel();termo=e.target.value.trim();render();},180);});
