@@ -2006,10 +2006,17 @@ async function openRecipe(id){
   m.querySelector('[data-favm]').onclick=async ev=>{const on=await store.toggleFavorite(id);ev.target.textContent=on?'🔖 Salva':'🤍 Salvar';renderSidebar();render();};
   const bEdit=m.querySelector('[data-edit]'); if(bEdit) bEdit.onclick=()=>{openForm(r);};
   const bDel=m.querySelector('[data-del]'); if(bDel) bDel.onclick=async()=>{
-    const snap={...r};
-    await store.deleteRecipe(id); closeOverlay(); await logAtividade('excluiu receita', r.titulo);
-    renderSidebar(); render();
-    toastUndo('Receita excluída', async()=>{ await store.saveRecipe(snap); await recarregaReviews(); renderSidebar(); render(); toast('Receita restaurada'); });
+    // Exibe a janela de confirmação nativa para PC e Celular
+    if (!confirm(`Tem certeza que deseja excluir "${r.titulo}"?\nEsta ação não poderá ser desfeita.`)) {
+      return; // Se o usuário clicar em "Cancelar", para por aqui e não exclui
+    }
+    
+    await store.deleteRecipe(id); 
+    closeOverlay(); 
+    await logAtividade('excluiu receita', r.titulo);
+    renderSidebar(); 
+    render();
+    toast('Receita excluída'); // Troca o "Desfazer" por um aviso simples de sucesso
   };
   // ações novas
   m.querySelector('[data-cook]').onclick=()=>abrirModoCozinhar(r,fator);
